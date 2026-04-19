@@ -2,10 +2,11 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { ApiService, Fridge, FridgeProof } from '../../core/api.service';
+import { FilePickerComponent } from '../../shared/file-picker.component';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FilePickerComponent],
   template: `
     <section class="page-top">
       <div>
@@ -75,7 +76,13 @@ import { ApiService, Fridge, FridgeProof } from '../../core/api.service';
             <input type="number" formControlName="temperature" placeholder="Température relevée">
             <input formControlName="createdBy" placeholder="Réalisé par">
             <textarea formControlName="comment" placeholder="Commentaire"></textarea>
-            <input type="file" (change)="onProofFile($event)" accept="image/*">
+            <app-file-picker
+              accept="image/*"
+              cameraAccept="image/*"
+              cameraLabel="Prendre photo du relevé"
+              fileLabel="Importer image"
+              (fileSelected)="onProofFilePicked($event)">
+            </app-file-picker>
           </div>
           <div class="modal-actions">
             <button type="button" class="secondary" (click)="closeProofModal()">Annuler</button>
@@ -160,9 +167,8 @@ export class FridgesComponent implements OnInit {
     this.proofForm.reset({ temperature: 4, createdBy: '', comment: '' });
   }
 
-  onProofFile(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    this.proofFile = input.files?.[0];
+  onProofFilePicked(file: File): void {
+    this.proofFile = file;
   }
 
   submitProof(): void {

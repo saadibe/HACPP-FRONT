@@ -3,10 +3,11 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { ApiService, Invoice, InvoiceOcrResponse, InvoiceStats } from '../../core/api.service';
+import { FilePickerComponent } from '../../shared/file-picker.component';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FilePickerComponent],
   template: `
     <section class="page-top">
       <div>
@@ -79,7 +80,13 @@ import { ApiService, Invoice, InvoiceOcrResponse, InvoiceStats } from '../../cor
               <option value="VALIDATED">Validé</option>
             </select>
             <textarea formControlName="note" placeholder="Note"></textarea>
-            <input type="file" (change)="onFile($event)" accept="image/*,.pdf">
+            <app-file-picker
+              accept="image/*,.pdf"
+              cameraAccept="image/*"
+              cameraLabel="Prendre photo du document"
+              fileLabel="Importer image ou PDF"
+              (fileSelected)="onTraceFilePicked($event)">
+            </app-file-picker>
           </div>
 
           <div class="ocr-preview" *ngIf="ocrText">
@@ -193,10 +200,7 @@ export class TraceabilityComponent implements OnInit {
     });
   }
 
-  onFile(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const selected = input.files?.[0];
-    if (!selected) return;
+  onTraceFilePicked(selected: File): void {
     this.file = selected;
     const fd = new FormData();
     fd.append('file', selected);
