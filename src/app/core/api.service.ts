@@ -28,11 +28,17 @@ export interface InvoiceOcrResponse {
 }
 export interface InvoiceStats { today: number; month: number; year: number; }
 export interface AlertSummary { lateCleaning: number; missingFridgeReadings: number; temperatureAlerts: number; }
+declare global {
+  interface Window {
+    __APP_CONFIG__?: { apiBaseUrl?: string };
+  }
+}
 
+const API_BASE = window.__APP_CONFIG__?.apiBaseUrl || 'http://localhost:8080/api';
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:8080/api';
+  private readonly baseUrl = API_BASE;
 
   login(payload: LoginRequest): Observable<LoginResponse> { return this.http.post<LoginResponse>(`${this.baseUrl}/auth/login`, payload); }
   getDashboard(): Observable<DashboardResponse> { return this.http.get<DashboardResponse>(`${this.baseUrl}/dashboard`); }
@@ -67,6 +73,10 @@ export class ApiService {
   getBatch(id: number): Observable<Batch> { return this.http.get<Batch>(`${this.baseUrl}/batches/${id}`); }
   createBatch(payload: Batch): Observable<Batch> { return this.http.post<Batch>(`${this.baseUrl}/batches`, payload); }
 
-  publicUrl(path?: string): string { return path ? `http://localhost:8080${path}` : ''; }
+  publicUrl(path?: string): string {
+    if (!path) return '';
+    const root = this.baseUrl.replace(/\/api$/, '');
+    return `${root}${path}`;
+  }
   reportUrl(): string { return `${this.baseUrl}/batches/report.pdf`; }
 }

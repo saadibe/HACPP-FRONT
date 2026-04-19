@@ -1,3 +1,3 @@
 window.__APP_CONFIG__ = {
-  apiBaseUrl: "https://api.votre-domaine.fr/api"
+  apiBaseUrl: "https://laperla-haccp-api.onrender.com/api"
 };
