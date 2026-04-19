@@ -73,10 +73,16 @@ export class ApiService {
   getBatch(id: number): Observable<Batch> { return this.http.get<Batch>(`${this.baseUrl}/batches/${id}`); }
   createBatch(payload: Batch): Observable<Batch> { return this.http.post<Batch>(`${this.baseUrl}/batches`, payload); }
 
-  publicUrl(path?: string): string {
-    if (!path) return '';
-    const root = this.baseUrl.replace(/\/api$/, '');
-    return `${root}${path}`;
+publicUrl(path?: string): string {
+  if (!path) return '';
+
+  // 🔥 IMPORTANT
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path;
   }
+
+  const root = this.baseUrl.replace(/\/api$/, '');
+  return `${root}${path}`;
+}
   reportUrl(): string { return `${this.baseUrl}/batches/report.pdf`; }
 }
