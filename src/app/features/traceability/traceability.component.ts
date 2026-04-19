@@ -72,6 +72,7 @@ import { FilePickerComponent } from '../../shared/file-picker.component';
 
         <div class="ocr-banner" *ngIf="ocrLoading">Lecture OCR en cours...</div>
         <div class="ocr-banner success" *ngIf="ocrDone">Préremplissage OCR terminé</div>
+        <div class="ocr-banner" *ngIf="confidenceLabel">{{ confidenceLabel }} - score {{ confidence }}/100</div>
 
         <form [formGroup]="form" (ngSubmit)="submit()">
           <div class="form-grid">
@@ -129,6 +130,8 @@ export class TraceabilityComponent implements OnInit {
   ocrLoading = false;
   ocrDone = false;
   ocrText = '';
+  confidence = 0;
+  confidenceLabel = '';
 
   filterForm = this.fb.nonNullable.group({
     day: '',
@@ -198,6 +201,8 @@ export class TraceabilityComponent implements OnInit {
     this.ocrLoading = false;
     this.ocrDone = false;
     this.ocrText = '';
+    this.confidence = 0;
+    this.confidenceLabel = '';
   }
 
   closeModal(): void {
@@ -206,6 +211,8 @@ export class TraceabilityComponent implements OnInit {
     this.ocrLoading = false;
     this.ocrDone = false;
     this.ocrText = '';
+    this.confidence = 0;
+    this.confidenceLabel = '';
     this.form.reset({
       supplierName: '', invoiceNumber: '', invoiceDate: '', productCategory: '', batchNumber: '',
       supplierLot: '', dlcDate: '', deliveryReference: '', storageLocation: 'Réserve',
@@ -224,6 +231,8 @@ export class TraceabilityComponent implements OnInit {
         this.ocrLoading = false;
         this.ocrDone = true;
         this.ocrText = ocr.rawText || '';
+        this.confidence = ocr.confidence || 0;
+        this.confidenceLabel = ocr.confidenceLabel || '';
         this.form.patchValue({
           supplierName: ocr.supplierName || '',
           invoiceNumber: ocr.invoiceNumber || '',
