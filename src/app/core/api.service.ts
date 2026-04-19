@@ -8,7 +8,7 @@ declare global {
   }
 }
 
-const API_BASE = window.__APP_CONFIG__?.apiBaseUrl || 'http://localhost:8080/api';
+const API_BASE = window.__APP_CONFIG__?.apiBaseUrl || 'https://laperla-haccp-api.onrender.com/api';
 
 export interface LoginRequest { username: string; password: string; }
 export interface LoginResponse { token: string; username: string; role: string; restaurantId: number; }
