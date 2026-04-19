@@ -12,9 +12,9 @@ import { FilePickerComponent } from '../../shared/file-picker.component';
     <section class="page-top">
       <div>
         <h1>Traçabilité</h1>
-        <p>Organisation par jour, mois et année.</p>
+        <p>Recherche rapide, import document, OCR et consultation des pièces par période.</p>
       </div>
-      <button type="button" class="btn-primary-pro" (click)="openModal()">Importer une pièce</button>
+      <button type="button" class="btn-primary-pro action-lg" (click)="openModal()">Nouvelle pièce</button>
     </section>
 
     <div class="stats-grid" *ngIf="stats">
@@ -24,6 +24,11 @@ import { FilePickerComponent } from '../../shared/file-picker.component';
     </div>
 
     <div class="card">
+      <div class="entity-toolbar no-margin">
+        <div class="toolbar-pill">📂 Filtres d'archives</div>
+        <div class="toolbar-help">Sélectionne une période puis filtre les pièces de traçabilité.</div>
+      </div>
+
       <div class="form-grid">
         <input type="date" [formControl]="filterForm.controls.day">
         <input type="month" [formControl]="filterForm.controls.month">
@@ -36,27 +41,32 @@ import { FilePickerComponent } from '../../shared/file-picker.component';
     </div>
 
     <div class="cards-grid">
-      <div class="entity-card" *ngFor="let invoice of invoices">
+      <div class="entity-card trace-card" *ngFor="let invoice of invoices">
         <div class="entity-head">
-          <strong>{{ invoice.supplierName }}</strong>
+          <div>
+            <strong>{{ invoice.supplierName }}</strong>
+            <p class="entity-subtitle">{{ invoice.productCategory || 'Sans catégorie' }}</p>
+          </div>
           <span class="badge">{{ invoice.traceabilityStatus || 'MANUAL_REVIEW' }}</span>
         </div>
-        <p><strong>N° :</strong> {{ invoice.invoiceNumber || '-' }}</p>
-        <p><strong>Date :</strong> {{ invoice.invoiceDate || '-' }}</p>
-        <p><strong>Catégorie :</strong> {{ invoice.productCategory || '-' }}</p>
-        <p><strong>Lot :</strong> {{ invoice.supplierLot || '-' }}</p>
-        <p><strong>Batch :</strong> {{ invoice.batchNumber || '-' }}</p>
-        <p><strong>DLC :</strong> {{ invoice.dlcDate || '-' }}</p>
-        <p><strong>Réf livraison :</strong> {{ invoice.deliveryReference || '-' }}</p>
-        <p><strong>Stockage :</strong> {{ invoice.storageLocation || '-' }}</p>
-        <a *ngIf="invoice.filePath" [href]="api.publicUrl(invoice.filePath)" target="_blank">Ouvrir le fichier</a>
+
+        <div class="trace-meta-grid">
+          <div><span>N°</span><strong>{{ invoice.invoiceNumber || '-' }}</strong></div>
+          <div><span>Date</span><strong>{{ invoice.invoiceDate || '-' }}</strong></div>
+          <div><span>Lot</span><strong>{{ invoice.supplierLot || '-' }}</strong></div>
+          <div><span>DLC</span><strong>{{ invoice.dlcDate || '-' }}</strong></div>
+        </div>
+
+        <div class="action-grid">
+          <a class="action-btn primary link-btn" *ngIf="invoice.filePath" [href]="api.publicUrl(invoice.filePath)" target="_blank">📄 Ouvrir le fichier</a>
+        </div>
       </div>
     </div>
 
     <div class="modal-backdrop" *ngIf="showModal">
       <div class="modal-card modal-xlarge">
         <div class="modal-head">
-          <h3>Importer une pièce de traçabilité</h3>
+          <h3>Nouvelle pièce de traçabilité</h3>
           <button class="icon-btn" type="button" (click)="closeModal()">×</button>
         </div>
 
@@ -80,6 +90,9 @@ import { FilePickerComponent } from '../../shared/file-picker.component';
               <option value="VALIDATED">Validé</option>
             </select>
             <textarea formControlName="note" placeholder="Note"></textarea>
+          </div>
+
+          <div class="camera-section">
             <app-file-picker
               accept="image/*,.pdf"
               cameraAccept="image/*"
@@ -96,16 +109,16 @@ import { FilePickerComponent } from '../../shared/file-picker.component';
 
           <div class="modal-actions">
             <button type="button" class="btn-secondary-pro" (click)="closeModal()">Annuler</button>
-            <button type="submit" class="btn-primary-pro">Enregistrer</button>
+            <button type="submit" class="btn-primary-pro action-lg">Enregistrer</button>
           </div>
         </form>
       </div>
     </div>
-  `,
-  styles: [`.clickable { cursor:pointer; }`]
+  `
 })
 export class TraceabilityComponent implements OnInit {
-  readonly api = inject(ApiService);
+  private apiService = inject(ApiService);
+  api = this.apiService;
   private fb = inject(FormBuilder);
   private route = inject(ActivatedRoute);
 

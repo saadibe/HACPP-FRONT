@@ -11,28 +11,38 @@ import { FilePickerComponent } from '../../shared/file-picker.component';
     <section class="page-top">
       <div>
         <h1>Zones de nettoyage</h1>
-        <p>Crée les zones, l'heure de nettoyage, puis ajoute des preuves photo datées.</p>
+        <p>Création des zones et ajout de preuves photo en quelques secondes.</p>
       </div>
-      <button type="button" class="btn-primary-pro" (click)="openZoneModal()">Ajouter une zone</button>
+      <button type="button" class="btn-primary-pro action-lg" (click)="openZoneModal()">Nouvelle zone</button>
     </section>
 
+    <div class="entity-toolbar">
+      <div class="toolbar-pill">🧼 Routine nettoyage</div>
+      <div class="toolbar-help">Chaque zone affiche son heure prévue et ses preuves récentes.</div>
+    </div>
+
     <div class="cards-grid">
-      <div class="entity-card" *ngFor="let zone of zones">
+      <div class="entity-card cleaning-card" *ngFor="let zone of zones">
         <div class="entity-head">
-          <strong>{{ zone.name }}</strong>
+          <div>
+            <strong>{{ zone.name }}</strong>
+            <p class="entity-subtitle">{{ zone.description || 'Sans description' }}</p>
+          </div>
           <span class="badge">{{ zone.scheduledTime }}</span>
         </div>
-        <p>{{ zone.description || '-' }}</p>
-        <div class="row actions-row">
-          <button type="button" class="btn-secondary-pro" (click)="openProofModal(zone)">Ajouter preuve</button>
-          <button type="button" class="btn-secondary-pro" (click)="toggleProofs(zone)">Voir preuves</button>
+
+        <div class="action-grid">
+          <button type="button" class="action-btn primary" (click)="openProofModal(zone)">📷 Nouvelle preuve</button>
+          <button type="button" class="action-btn" (click)="toggleProofs(zone)">🕘 Voir preuves</button>
         </div>
 
         <div class="proof-list" *ngIf="selectedZoneId === zone.id">
           <div class="proof-card" *ngFor="let proof of proofs">
             <img *ngIf="proof.photoPath" class="preview" [src]="api.publicUrl(proof.photoPath)" alt="">
-            <p><strong>Par :</strong> {{ proof.createdBy }}</p>
-            <p><strong>Date :</strong> {{ proof.createdAt }}</p>
+            <div class="proof-meta-grid">
+              <div><span>Par</span><strong>{{ proof.createdBy }}</strong></div>
+              <div><span>Date</span><strong>{{ proof.createdAt }}</strong></div>
+            </div>
             <p>{{ proof.comment || '-' }}</p>
           </div>
         </div>
@@ -42,7 +52,7 @@ import { FilePickerComponent } from '../../shared/file-picker.component';
     <div class="modal-backdrop" *ngIf="showZoneModal">
       <div class="modal-card">
         <div class="modal-head">
-          <h3>Ajouter une zone de nettoyage</h3>
+          <h3>Nouvelle zone de nettoyage</h3>
           <button class="icon-btn" type="button" (click)="closeZoneModal()">×</button>
         </div>
         <form [formGroup]="zoneForm" (ngSubmit)="submitZone()">
@@ -65,10 +75,18 @@ import { FilePickerComponent } from '../../shared/file-picker.component';
           <h3>Ajouter une preuve - {{ currentZone.name }}</h3>
           <button class="icon-btn" type="button" (click)="closeProofModal()">×</button>
         </div>
+
+        <div class="operational-banner">
+          <strong>Heure prévue :</strong> {{ currentZone.scheduledTime }}
+        </div>
+
         <form [formGroup]="proofForm" (ngSubmit)="submitProof()">
           <div class="form-grid">
             <input formControlName="createdBy" placeholder="Réalisé par">
             <textarea formControlName="comment" placeholder="Commentaire"></textarea>
+          </div>
+
+          <div class="camera-section">
             <app-file-picker
               accept="image/*"
               cameraAccept="image/*"
@@ -77,21 +95,19 @@ import { FilePickerComponent } from '../../shared/file-picker.component';
               (fileSelected)="onProofFilePicked($event)">
             </app-file-picker>
           </div>
+
           <div class="modal-actions">
             <button type="button" class="btn-secondary-pro" (click)="closeProofModal()">Annuler</button>
-            <button type="submit" class="btn-primary-pro">Ajouter la preuve</button>
+            <button type="submit" class="btn-primary-pro action-lg">Valider la preuve</button>
           </div>
         </form>
       </div>
     </div>
-  `,
-  styles: [`
-    .proof-list { margin-top: 16px; display: grid; gap: 12px; }
-    .proof-card { padding: 14px; border: 1px solid #e5e7eb; border-radius: 16px; background: #f8fafc; }
-  `]
+  `
 })
 export class CleaningZonesComponent implements OnInit {
-  readonly api = inject(ApiService);
+  private apiService = inject(ApiService);
+  api = this.apiService;
   private fb = inject(FormBuilder);
 
   zones: CleaningZone[] = [];

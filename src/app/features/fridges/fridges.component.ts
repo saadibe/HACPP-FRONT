@@ -11,32 +11,52 @@ import { FilePickerComponent } from '../../shared/file-picker.component';
     <section class="page-top">
       <div>
         <h1>Frigos</h1>
-        <p>Gestion des enceintes froides et relevés photo.</p>
+        <p>Ajout rapide des relevés et lecture claire des plages de température.</p>
       </div>
-      <button type="button" (click)="openModal()">Ajouter un frigo</button>
+      <button type="button" class="btn-primary-pro action-lg" (click)="openModal()">Nouveau frigo</button>
     </section>
 
+    <div class="entity-toolbar">
+      <div class="toolbar-pill">🟢 Actions terrain rapides</div>
+      <div class="toolbar-help">Clique sur un frigo pour ajouter un relevé photo immédiatement.</div>
+    </div>
+
     <div class="cards-grid">
-      <div class="entity-card" *ngFor="let fridge of fridges">
+      <div class="entity-card fridge-card" *ngFor="let fridge of fridges">
         <div class="entity-head">
-          <strong>{{ fridge.name }}</strong>
+          <div>
+            <strong>{{ fridge.name }}</strong>
+            <p class="entity-subtitle">{{ fridge.location || 'Sans emplacement' }}</p>
+          </div>
           <span class="badge" [class.red]="fridge.status === 'INACTIVE'">
             {{ fridge.status === 'INACTIVE' ? 'Inactif' : 'Actif' }}
           </span>
         </div>
-        <p>{{ fridge.location || '-' }}</p>
-        <p>{{ fridge.minTemp }}°C → {{ fridge.maxTemp }}°C</p>
-        <div class="row actions-row">
-          <button type="button" class="secondary" (click)="openProofModal(fridge)">Ajouter relevé</button>
-          <button type="button" class="secondary" (click)="toggleProofs(fridge)">Voir relevés</button>
-          <button type="button" class="secondary" (click)="disable(fridge.id!)">Désactiver</button>
+
+        <div class="metric-strip">
+          <div class="metric-box">
+            <span>Min</span>
+            <strong>{{ fridge.minTemp }}°C</strong>
+          </div>
+          <div class="metric-box">
+            <span>Max</span>
+            <strong>{{ fridge.maxTemp }}°C</strong>
+          </div>
+        </div>
+
+        <div class="action-grid">
+          <button type="button" class="action-btn primary" (click)="openProofModal(fridge)">📷 Nouveau relevé</button>
+          <button type="button" class="action-btn" (click)="toggleProofs(fridge)">🕘 Historique</button>
+          <button type="button" class="action-btn subtle" (click)="disable(fridge.id!)">⛔ Désactiver</button>
         </div>
 
         <div class="proof-list" *ngIf="selectedFridgeId === fridge.id">
           <div class="proof-card" *ngFor="let proof of proofs">
             <img *ngIf="proof.photoPath" class="preview" [src]="api.publicUrl(proof.photoPath)" alt="">
-            <p><strong>Température :</strong> {{ proof.temperature }} °C</p>
-            <p><strong>Par :</strong> {{ proof.createdBy }}</p>
+            <div class="proof-meta-grid">
+              <div><span>Température</span><strong>{{ proof.temperature }} °C</strong></div>
+              <div><span>Par</span><strong>{{ proof.createdBy }}</strong></div>
+            </div>
             <p><strong>Date :</strong> {{ proof.createdAt }}</p>
             <p>{{ proof.comment || '-' }}</p>
           </div>
@@ -47,7 +67,7 @@ import { FilePickerComponent } from '../../shared/file-picker.component';
     <div class="modal-backdrop" *ngIf="showModal">
       <div class="modal-card">
         <div class="modal-head">
-          <h3>Ajouter un frigo</h3>
+          <h3>Nouveau frigo</h3>
           <button class="icon-btn" type="button" (click)="closeModal()">×</button>
         </div>
         <form [formGroup]="form" (ngSubmit)="submit()">
@@ -58,8 +78,8 @@ import { FilePickerComponent } from '../../shared/file-picker.component';
             <input type="number" formControlName="maxTemp" placeholder="Temp max">
           </div>
           <div class="modal-actions">
-            <button type="button" class="secondary" (click)="closeModal()">Annuler</button>
-            <button type="submit">Enregistrer</button>
+            <button type="button" class="btn-secondary-pro" (click)="closeModal()">Annuler</button>
+            <button type="submit" class="btn-primary-pro">Enregistrer</button>
           </div>
         </form>
       </div>
@@ -71,11 +91,19 @@ import { FilePickerComponent } from '../../shared/file-picker.component';
           <h3>Ajouter un relevé - {{ currentFridge.name }}</h3>
           <button class="icon-btn" type="button" (click)="closeProofModal()">×</button>
         </div>
+
+        <div class="operational-banner">
+          <strong>Plage attendue :</strong> {{ currentFridge.minTemp }}°C à {{ currentFridge.maxTemp }}°C
+        </div>
+
         <form [formGroup]="proofForm" (ngSubmit)="submitProof()">
           <div class="form-grid">
             <input type="number" formControlName="temperature" placeholder="Température relevée">
             <input formControlName="createdBy" placeholder="Réalisé par">
             <textarea formControlName="comment" placeholder="Commentaire"></textarea>
+          </div>
+
+          <div class="camera-section">
             <app-file-picker
               accept="image/*"
               cameraAccept="image/*"
@@ -84,22 +112,19 @@ import { FilePickerComponent } from '../../shared/file-picker.component';
               (fileSelected)="onProofFilePicked($event)">
             </app-file-picker>
           </div>
+
           <div class="modal-actions">
-            <button type="button" class="secondary" (click)="closeProofModal()">Annuler</button>
-            <button type="submit">Ajouter le relevé</button>
+            <button type="button" class="btn-secondary-pro" (click)="closeProofModal()">Annuler</button>
+            <button type="submit" class="btn-primary-pro action-lg">Valider le relevé</button>
           </div>
         </form>
       </div>
     </div>
-  `,
-  styles: [`
-    .proof-list { margin-top: 16px; display: grid; gap: 12px; }
-    .proof-card { padding: 14px; border: 1px solid #e5e7eb; border-radius: 16px; background: #f8fafc; }
-    .clickable { cursor: pointer; }
-  `]
+  `
 })
 export class FridgesComponent implements OnInit {
-  private api = inject(ApiService);
+  private apiService = inject(ApiService);
+  api = this.apiService;
   private fb = inject(FormBuilder);
   fridges: Fridge[] = [];
   proofs: FridgeProof[] = [];

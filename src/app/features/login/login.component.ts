@@ -9,28 +9,39 @@ import { ApiService } from '../../core/api.service';
   imports: [CommonModule, ReactiveFormsModule],
   template: `
     <div class="login-shell">
+      <div class="login-visual">
+        <div class="login-badge">HACCP</div>
+        <h1>Gestion qualité restaurant</h1>
+        <p>Traçabilité, nettoyage, relevés frigo, alertes et DLC dans une interface optimisée pour la tablette.</p>
+
+        <div class="feature-list">
+          <div class="feature-item">✓ Relevés photo rapides</div>
+          <div class="feature-item">✓ Traçabilité centralisée</div>
+          <div class="feature-item">✓ Alertes automatiques</div>
+        </div>
+      </div>
+
       <div class="login-card">
         <div class="login-head">
           <div class="logo-circle">LP</div>
           <div>
-            <h1>Connexion</h1>
-            <p>Accède à ton espace HACCP</p>
+            <h2>Connexion</h2>
+            <p>Accès sécurisé à l'application</p>
           </div>
         </div>
 
-        <div class="demo-box">
-          <strong>Compte démo</strong>
-          <span>admin / admin123</span>
-        </div>
+        <form [formGroup]="form" (ngSubmit)="submit()" class="login-form-pro">
+          <label>
+            <span>Nom d'utilisateur</span>
+            <input formControlName="username" placeholder="admin">
+          </label>
 
-        <form [formGroup]="form" (ngSubmit)="submit()">
-          <label>Nom d'utilisateur</label>
-          <input formControlName="username" placeholder="Nom d'utilisateur">
+          <label>
+            <span>Mot de passe</span>
+            <input formControlName="password" type="password" placeholder="••••••••">
+          </label>
 
-          <label>Mot de passe</label>
-          <input formControlName="password" type="password" placeholder="Mot de passe">
-
-          <button type="submit">Se connecter</button>
+          <button type="submit" class="btn-primary-pro">Se connecter</button>
         </form>
 
         <p *ngIf="error" class="error-text">{{ error }}</p>
@@ -46,8 +57,8 @@ export class LoginComponent implements OnInit {
   error = '';
 
   form = this.fb.nonNullable.group({
-    username: 'admin',
-    password: 'admin123'
+    username: '',
+    password: ''
   });
 
   ngOnInit(): void {
@@ -58,13 +69,18 @@ export class LoginComponent implements OnInit {
 
   submit(): void {
     this.error = '';
+
     this.api.login(this.form.getRawValue()).subscribe({
       next: (res) => {
         localStorage.setItem('token', res.token);
         localStorage.setItem('username', res.username);
+        localStorage.setItem('role', res.role);
+        localStorage.setItem('restaurantId', String(res.restaurantId));
         this.router.navigateByUrl('/dashboard');
       },
-      error: () => this.error = 'Connexion impossible'
+      error: () => {
+        this.error = 'Connexion impossible';
+      }
     });
   }
 }

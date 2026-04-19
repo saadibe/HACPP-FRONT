@@ -9,9 +9,35 @@ import { ApiService, DashboardResponse } from '../../core/api.service';
   template: `
     <section class="page-top">
       <div>
-        <h1>Dashboard</h1>
-        <p>Vue rapide de l'activité HACCP du restaurant.</p>
+        <h1>Dashboard terrain</h1>
+        <p>Vue rapide des actions urgentes et accès direct aux modules utilisés pendant le service.</p>
       </div>
+    </section>
+
+    <section class="quick-actions-panel">
+      <button class="quick-action-card" (click)="go('/fridges')">
+        <span class="quick-icon">🌡️</span>
+        <strong>Relevés frigo</strong>
+        <small>Ajouter un relevé ou vérifier les températures</small>
+      </button>
+
+      <button class="quick-action-card" (click)="go('/cleaning-zones')">
+        <span class="quick-icon">🧼</span>
+        <strong>Preuves nettoyage</strong>
+        <small>Prendre une photo de preuve rapidement</small>
+      </button>
+
+      <button class="quick-action-card" (click)="go('/traceability')">
+        <span class="quick-icon">📦</span>
+        <strong>Traçabilité</strong>
+        <small>Importer une facture ou une pièce fournisseur</small>
+      </button>
+
+      <button class="quick-action-card" (click)="go('/batches')">
+        <span class="quick-icon">🏷️</span>
+        <strong>Lots DLC</strong>
+        <small>Créer, imprimer et suivre les étiquettes</small>
+      </button>
     </section>
 
     <div class="stats-grid" *ngIf="stats">
@@ -24,26 +50,11 @@ import { ApiService, DashboardResponse } from '../../core/api.service';
       <div class="stat-card clickable" (click)="go('/fridges')">
         <span>Frigos</span><strong>{{ stats.fridges }}</strong>
       </div>
-      <div class="stat-card clickable" (click)="go('/cleaning-zones')">
-        <span>Zones nettoyage</span><strong>{{ stats.checks }}</strong>
-      </div>
       <div class="stat-card clickable" (click)="go('/traceability?scope=today')">
         <span>Traçabilité du jour</span><strong>{{ stats.traceabilityToday }}</strong>
       </div>
-      <div class="stat-card clickable" (click)="go('/traceability?scope=month')">
-        <span>Traçabilité du mois</span><strong>{{ stats.traceabilityMonth }}</strong>
-      </div>
-      <div class="stat-card clickable" (click)="go('/traceability?scope=year')">
-        <span>Traçabilité de l'année</span><strong>{{ stats.traceabilityYear }}</strong>
-      </div>
-      <div class="stat-card clickable" (click)="go('/fridges')">
-        <span>Relevés frigo photo</span><strong>{{ stats.fridgeProofs }}</strong>
-      </div>
       <div class="stat-card warning clickable" (click)="go('/alerts/cleaning')">
         <span>Nettoyages en retard</span><strong>{{ stats.lateCleaning }}</strong>
-      </div>
-      <div class="stat-card warning clickable" (click)="go('/alerts/fridges')">
-        <span>Relevés manquants</span><strong>{{ stats.missingFridgeReadings }}</strong>
       </div>
       <div class="stat-card danger clickable" (click)="go('/alerts/fridges')">
         <span>Températures hors plage</span><strong>{{ stats.temperatureAlerts }}</strong>
