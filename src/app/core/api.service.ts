@@ -34,7 +34,7 @@ declare global {
   }
 }
 
-const API_BASE = window.__APP_CONFIG__?.apiBaseUrl || 'http://localhost:8080/api';
+const API_BASE = window.__APP_CONFIG__?.apiBaseUrl || 'http://localhost:8081/api';
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private readonly http = inject(HttpClient);
