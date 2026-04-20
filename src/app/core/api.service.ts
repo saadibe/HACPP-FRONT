@@ -124,6 +124,12 @@ export interface InvoiceOcrResponse {
   storageLocation: string;
   traceabilityStatus: string;
   note: string;
+
+  // ✅ AJOUTS
+  totalAmount?: string;
+  confidence?: number;
+  confidenceLabel?: string;
+
   rawText: string;
 }
 
