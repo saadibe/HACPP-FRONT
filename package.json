@@ -17,7 +17,8 @@
     "@angular/router": "^17.3.0",
     "rxjs": "^7.8.0",
     "tslib": "^2.6.2",
-    "zone.js": "^0.14.3"
+    "zone.js": "^0.14.3",
+    "@angular/service-worker": "^17.3.0"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^17.3.0",

@@ -3,18 +3,17 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { ApiService, Invoice, InvoiceOcrResponse, InvoiceStats } from '../../core/api.service';
-import { FilePickerComponent } from '../../shared/file-picker.component';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FilePickerComponent],
+  imports: [CommonModule, ReactiveFormsModule],
   template: `
     <section class="page-top">
       <div>
         <h1>Traçabilité</h1>
-        <p>Recherche rapide, import document, OCR et consultation des pièces par période.</p>
+        <p>Tu peux maintenant modifier ou supprimer une pièce de traçabilité.</p>
       </div>
-      <button type="button" class="btn-primary-pro action-lg" (click)="openModal()">Nouvelle pièce</button>
+      <button type="button" class="btn-primary-pro action-lg" (click)="openCreateModal()">Nouvelle pièce</button>
     </section>
 
     <div class="stats-grid" *ngIf="stats">
@@ -24,11 +23,6 @@ import { FilePickerComponent } from '../../shared/file-picker.component';
     </div>
 
     <div class="card">
-      <div class="entity-toolbar no-margin">
-        <div class="toolbar-pill">📂 Filtres d'archives</div>
-        <div class="toolbar-help">Sélectionne une période puis filtre les pièces de traçabilité.</div>
-      </div>
-
       <div class="form-grid">
         <input type="date" [formControl]="filterForm.controls.day">
         <input type="month" [formControl]="filterForm.controls.month">
@@ -58,7 +52,9 @@ import { FilePickerComponent } from '../../shared/file-picker.component';
         </div>
 
         <div class="action-grid">
-          <a class="action-btn primary link-btn" *ngIf="invoice.filePath" [href]="api.publicUrl(invoice.filePath)" target="_blank">📄 Ouvrir le fichier</a>
+          <a class="action-btn primary link-btn" *ngIf="invoice.filePath" [href]="api.publicUrl(invoice.filePath)" target="_blank">📄 Ouvrir</a>
+          <button type="button" class="action-btn" (click)="openEditModal(invoice)">✏️ Modifier</button>
+          <button type="button" class="action-btn subtle" (click)="remove(invoice.id!)">🗑️ Supprimer</button>
         </div>
       </div>
     </div>
@@ -66,7 +62,7 @@ import { FilePickerComponent } from '../../shared/file-picker.component';
     <div class="modal-backdrop" *ngIf="showModal">
       <div class="modal-card modal-xlarge">
         <div class="modal-head">
-          <h3>Nouvelle pièce de traçabilité</h3>
+          <h3>{{ editingId ? 'Modifier la pièce' : 'Nouvelle pièce de traçabilité' }}</h3>
           <button class="icon-btn" type="button" (click)="closeModal()">×</button>
         </div>
 
@@ -93,14 +89,12 @@ import { FilePickerComponent } from '../../shared/file-picker.component';
             <textarea formControlName="note" placeholder="Note"></textarea>
           </div>
 
-          <div class="camera-section">
-            <app-file-picker
-              accept="image/*,.pdf"
-              cameraAccept="image/*"
-              cameraLabel="Prendre photo du document"
-              fileLabel="Importer image ou PDF"
-              (fileSelected)="onTraceFilePicked($event)">
-            </app-file-picker>
+          <div class="camera-section" *ngIf="!editingId">
+            <label class="picker-btn">
+              📄 Choisir image ou PDF
+              <input type="file" accept="image/*,.pdf" (change)="onTraceFilePicked($event)" hidden>
+            </label>
+            <div class="file-name" *ngIf="file">{{ file.name }}</div>
           </div>
 
           <div class="ocr-preview" *ngIf="ocrText">
@@ -110,7 +104,7 @@ import { FilePickerComponent } from '../../shared/file-picker.component';
 
           <div class="modal-actions">
             <button type="button" class="btn-secondary-pro" (click)="closeModal()">Annuler</button>
-            <button type="submit" class="btn-primary-pro action-lg">Enregistrer</button>
+            <button type="submit" class="btn-primary-pro action-lg">{{ editingId ? 'Enregistrer les modifications' : 'Enregistrer' }}</button>
           </div>
         </form>
       </div>
@@ -132,6 +126,7 @@ export class TraceabilityComponent implements OnInit {
   ocrText = '';
   confidence = 0;
   confidenceLabel = '';
+  editingId?: number;
 
   filterForm = this.fb.nonNullable.group({
     day: '',
@@ -173,40 +168,38 @@ export class TraceabilityComponent implements OnInit {
     this.api.getInvoices(filters).subscribe(data => this.invoices = data);
   }
 
-  reset(): void {
-    this.filterForm.reset({ day: '', month: '', year: 0 });
-    this.search();
-  }
+  reset(): void { this.filterForm.reset({ day: '', month: '', year: 0 }); this.search(); }
+  applyToday(): void { this.filterForm.patchValue({ day: new Date().toISOString().slice(0, 10), month: '', year: 0 }); this.search(); }
+  applyMonth(): void { this.filterForm.patchValue({ day: '', month: new Date().toISOString().slice(0, 7), year: 0 }); this.search(); }
+  applyYear(): void { this.filterForm.patchValue({ day: '', month: '', year: new Date().getFullYear() }); this.search(); }
 
-  applyToday(): void {
-    const today = new Date().toISOString().slice(0, 10);
-    this.filterForm.patchValue({ day: today, month: '', year: 0 });
-    this.search();
-  }
+  openCreateModal(): void { this.editingId = undefined; this.showModal = true; this.resetModalState(); }
 
-  applyMonth(): void {
-    const today = new Date().toISOString().slice(0, 7);
-    this.filterForm.patchValue({ day: '', month: today, year: 0 });
-    this.search();
-  }
-
-  applyYear(): void {
-    const year = new Date().getFullYear();
-    this.filterForm.patchValue({ day: '', month: '', year });
-    this.search();
-  }
-
-  openModal(): void {
+  openEditModal(invoice: Invoice): void {
+    this.editingId = invoice.id;
     this.showModal = true;
+    this.file = undefined;
     this.ocrLoading = false;
     this.ocrDone = false;
-    this.ocrText = '';
-    this.confidence = 0;
-    this.confidenceLabel = '';
+    this.ocrText = invoice.ocrRawText || '';
+    this.form.patchValue({
+      supplierName: invoice.supplierName || '',
+      invoiceNumber: invoice.invoiceNumber || '',
+      invoiceDate: invoice.invoiceDate || '',
+      productCategory: invoice.productCategory || '',
+      batchNumber: invoice.batchNumber || '',
+      supplierLot: invoice.supplierLot || '',
+      dlcDate: invoice.dlcDate || '',
+      deliveryReference: invoice.deliveryReference || '',
+      storageLocation: invoice.storageLocation || 'Réserve',
+      traceabilityStatus: invoice.traceabilityStatus || 'MANUAL_REVIEW',
+      note: invoice.note || ''
+    });
   }
 
-  closeModal(): void {
-    this.showModal = false;
+  closeModal(): void { this.showModal = false; this.editingId = undefined; this.resetModalState(); }
+
+  resetModalState(): void {
     this.file = undefined;
     this.ocrLoading = false;
     this.ocrDone = false;
@@ -220,7 +213,10 @@ export class TraceabilityComponent implements OnInit {
     });
   }
 
-  onTraceFilePicked(selected: File): void {
+  onTraceFilePicked(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const selected = input.files?.[0];
+    if (!selected) return;
     this.file = selected;
     const fd = new FormData();
     fd.append('file', selected);
@@ -252,7 +248,6 @@ export class TraceabilityComponent implements OnInit {
   }
 
   submit(): void {
-    if (!this.file) return;
     const value = this.form.getRawValue();
     const fd = new FormData();
     fd.append('supplierName', value.supplierName);
@@ -267,10 +262,27 @@ export class TraceabilityComponent implements OnInit {
     if (value.traceabilityStatus) fd.append('traceabilityStatus', value.traceabilityStatus);
     if (value.note) fd.append('note', value.note);
     if (this.ocrText) fd.append('ocrRawText', this.ocrText);
-    fd.append('file', this.file);
 
+    if (this.editingId) {
+      this.api.updateInvoice(this.editingId, fd).subscribe(() => {
+        this.closeModal();
+        this.api.getInvoiceStats().subscribe(s => this.stats = s);
+        this.search();
+      });
+      return;
+    }
+
+    if (!this.file) return;
+    fd.append('file', this.file);
     this.api.createInvoice(fd).subscribe(() => {
       this.closeModal();
+      this.api.getInvoiceStats().subscribe(s => this.stats = s);
+      this.search();
+    });
+  }
+
+  remove(id: number): void {
+    this.api.deleteInvoice(id).subscribe(() => {
       this.api.getInvoiceStats().subscribe(s => this.stats = s);
       this.search();
     });

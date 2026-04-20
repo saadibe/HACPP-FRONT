@@ -1,0 +1,4 @@
+Render Static Site rewrite:
+Source: /*
+Destination: /index.html
+Action: Rewrite

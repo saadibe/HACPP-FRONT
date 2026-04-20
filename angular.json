@@ -15,8 +15,20 @@
             "index": "src/index.html",
             "browser": "src/main.ts",
             "tsConfig": "tsconfig.app.json",
-            "assets": [],
-            "styles": ["src/styles.css"]
+            "assets": [
+              "src/favicon.ico",
+              "src/assets",
+              "src/manifest.webmanifest"
+            ],
+            "styles": [
+              "src/styles.css"
+            ]
+          },
+          "configurations": {
+            "production": {
+              "serviceWorker": true,
+              "ngswConfigPath": "ngsw-config.json"
+            }
           }
         },
         "serve": {
@@ -27,8 +39,5 @@
         }
       }
     }
-  },
-  "cli": {
-    "analytics": false
   }
 }
