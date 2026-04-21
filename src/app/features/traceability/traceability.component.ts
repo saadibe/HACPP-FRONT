@@ -2,7 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { ApiService, Invoice, InvoiceOcrResponse, InvoiceStats } from '../../core/api.service';
+import { ApiService, Invoice, InvoiceOcrResponse, InvoiceStats, TraceabilityProof, ProofPhoto } from '../../core/api.service';
 
 @Component({
   standalone: true,
@@ -11,7 +11,7 @@ import { ApiService, Invoice, InvoiceOcrResponse, InvoiceStats } from '../../cor
     <section class="page-top">
       <div>
         <h1>Traçabilité</h1>
-        <p>Tu peux maintenant modifier ou supprimer une pièce de traçabilité.</p>
+        <p>Ajout de plusieurs preuves et plusieurs fichiers sur une même traçabilité.</p>
       </div>
       <button type="button" class="btn-primary-pro action-lg" (click)="openCreateModal()">Nouvelle pièce</button>
     </section>
@@ -54,7 +54,30 @@ import { ApiService, Invoice, InvoiceOcrResponse, InvoiceStats } from '../../cor
         <div class="action-grid">
           <a class="action-btn primary link-btn" *ngIf="invoice.filePath" [href]="api.publicUrl(invoice.filePath)" target="_blank">📄 Ouvrir</a>
           <button type="button" class="action-btn" (click)="openEditModal(invoice)">✏️ Modifier</button>
+          <button type="button" class="action-btn" (click)="toggleProofs(invoice)">📚 Preuves</button>
+          <button type="button" class="action-btn primary" (click)="openProofModal(invoice)">📷 Nouvelle preuve</button>
           <button type="button" class="action-btn subtle" (click)="remove(invoice.id!)">🗑️ Supprimer</button>
+        </div>
+
+        <div class="proof-list" *ngIf="selectedInvoiceId === invoice.id">
+          <div class="proof-card" *ngFor="let proof of (invoiceProofs[invoice.id!] || [])">
+            <div class="multi-preview-grid">
+              <div class="sortable-photo-card" *ngFor="let photo of proof.photos">
+                <img class="preview mini-preview" [src]="api.publicUrl(photo.url)" alt="">
+                <div class="photo-actions">
+                  <button type="button" class="tiny-btn danger" (click)="deleteTraceabilityPhoto(proof, photo)">✕</button>
+                </div>
+              </div>
+            </div>
+            <div class="proof-meta-grid">
+              <div><span>Par</span><strong>{{ proof.createdBy }}</strong></div>
+              <div><span>Date</span><strong>{{ proof.createdAt }}</strong></div>
+            </div>
+            <p>{{ proof.comment || '-' }}</p>
+            <div class="action-grid">
+              <button type="button" class="action-btn subtle" (click)="deleteTraceabilityProof(invoice.id!, proof.id!)">🗑️ Supprimer la preuve</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -109,6 +132,33 @@ import { ApiService, Invoice, InvoiceOcrResponse, InvoiceStats } from '../../cor
         </form>
       </div>
     </div>
+
+    <div class="modal-backdrop" *ngIf="showProofCreateModal && currentInvoice">
+      <div class="modal-card">
+        <div class="modal-head">
+          <h3>Nouvelle preuve - {{ currentInvoice.supplierName }}</h3>
+          <button class="icon-btn" type="button" (click)="closeProofModal()">×</button>
+        </div>
+        <form [formGroup]="proofCreateForm" (ngSubmit)="submitTraceabilityProof()">
+          <div class="form-grid">
+            <input formControlName="createdBy" placeholder="Réalisé par">
+            <textarea formControlName="comment" placeholder="Commentaire"></textarea>
+          </div>
+          <div class="camera-section drop-zone" (dragover)="onZoneDragOver($event)" (drop)="onProofFilesDropped($event)">
+            <label class="picker-btn">
+              📷 Ajouter plusieurs fichiers
+              <input type="file" accept="image/*,.pdf" multiple (change)="onProofFilesPicked($event)" hidden>
+            </label>
+            <div class="drop-hint">Glisse-dépose plusieurs fichiers ici</div>
+            <div class="file-name" *ngIf="proofFiles.length">{{ proofFiles.length }} fichier(s) sélectionné(s)</div>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary-pro" (click)="closeProofModal()">Annuler</button>
+            <button type="submit" class="btn-primary-pro action-lg">Enregistrer la preuve</button>
+          </div>
+        </form>
+      </div>
+    </div>
   `
 })
 export class TraceabilityComponent implements OnInit {
@@ -118,9 +168,14 @@ export class TraceabilityComponent implements OnInit {
   private route = inject(ActivatedRoute);
 
   invoices: Invoice[] = [];
+  invoiceProofs: Record<number, TraceabilityProof[]> = {};
+  selectedInvoiceId?: number;
   stats?: InvoiceStats;
   file?: File;
+  proofFiles: File[] = [];
+  currentInvoice?: Invoice;
   showModal = false;
+  showProofCreateModal = false;
   ocrLoading = false;
   ocrDone = false;
   ocrText = '';
@@ -148,6 +203,11 @@ export class TraceabilityComponent implements OnInit {
     note: ''
   });
 
+  proofCreateForm = this.fb.nonNullable.group({
+    createdBy: '',
+    comment: ''
+  });
+
   ngOnInit(): void {
     this.api.getInvoiceStats().subscribe(s => this.stats = s);
     this.route.queryParamMap.subscribe(params => {
@@ -172,6 +232,64 @@ export class TraceabilityComponent implements OnInit {
   applyToday(): void { this.filterForm.patchValue({ day: new Date().toISOString().slice(0, 10), month: '', year: 0 }); this.search(); }
   applyMonth(): void { this.filterForm.patchValue({ day: '', month: new Date().toISOString().slice(0, 7), year: 0 }); this.search(); }
   applyYear(): void { this.filterForm.patchValue({ day: '', month: '', year: new Date().getFullYear() }); this.search(); }
+
+  toggleProofs(invoice: Invoice): void {
+    if (this.selectedInvoiceId === invoice.id) { this.selectedInvoiceId = undefined; return; }
+    this.selectedInvoiceId = invoice.id;
+    this.api.getTraceabilityProofs(invoice.id!).subscribe(v => this.invoiceProofs[invoice.id!] = v);
+  }
+
+  openProofModal(invoice: Invoice): void {
+    this.currentInvoice = invoice;
+    this.proofFiles = [];
+    this.proofCreateForm.reset({ createdBy: '', comment: '' });
+    this.showProofCreateModal = true;
+  }
+
+  closeProofModal(): void {
+    this.showProofCreateModal = false;
+    this.currentInvoice = undefined;
+    this.proofFiles = [];
+  }
+
+  onProofFilesPicked(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.proofFiles = Array.from(input.files || []);
+  }
+
+  onZoneDragOver(event: DragEvent): void { event.preventDefault(); }
+  onProofFilesDropped(event: DragEvent): void {
+    event.preventDefault();
+    const files = Array.from(event.dataTransfer?.files || []);
+    this.proofFiles = [...this.proofFiles, ...files];
+  }
+
+  submitTraceabilityProof(): void {
+    if (!this.currentInvoice?.id || !this.proofFiles.length) return;
+    const v = this.proofCreateForm.getRawValue();
+    const fd = new FormData();
+    fd.append('createdBy', v.createdBy);
+    fd.append('comment', v.comment);
+    this.proofFiles.forEach(f => fd.append('photos', f));
+    this.api.createTraceabilityProof(this.currentInvoice.id, fd).subscribe(() => {
+      const id = this.currentInvoice!.id!;
+      this.closeProofModal();
+      this.selectedInvoiceId = id;
+      this.api.getTraceabilityProofs(id).subscribe(r => this.invoiceProofs[id] = r);
+    });
+  }
+
+  deleteTraceabilityProof(invoiceId: number, proofId: number): void {
+    this.api.deleteTraceabilityProof(proofId).subscribe(() => {
+      this.api.getTraceabilityProofs(invoiceId).subscribe(r => this.invoiceProofs[invoiceId] = r);
+    });
+  }
+
+  deleteTraceabilityPhoto(proof: TraceabilityProof, photo: ProofPhoto): void {
+    this.api.deleteTraceabilityPhoto(photo.id!).subscribe(() => {
+      proof.photos = (proof.photos || []).filter(p => p.id !== photo.id);
+    });
+  }
 
   openCreateModal(): void { this.editingId = undefined; this.showModal = true; this.resetModalState(); }
 

@@ -527,3 +527,53 @@ button.secondary,.btn-secondary-pro{
   font-size:13px;
   font-weight:600;
 }
+
+
+.multi-preview-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+  gap:10px;
+  margin-bottom:12px;
+}
+.mini-preview{
+  max-height:120px;
+  border-radius:14px;
+}
+.sortable-photo-card{
+  position:relative;
+  border:1px solid #dbe4ef;
+  border-radius:16px;
+  background:#fff;
+  padding:8px;
+  box-shadow:0 8px 18px rgba(16,24,40,.06);
+}
+.photo-actions{
+  display:flex;
+  gap:6px;
+  justify-content:flex-end;
+  margin-top:8px;
+}
+.tiny-btn{
+  width:auto!important;
+  min-width:34px;
+  padding:6px 8px;
+  border-radius:10px;
+  background:#eef2f7;
+  color:#101828;
+  font-size:12px;
+  font-weight:800;
+}
+.tiny-btn.danger{
+  background:#fff1f3;
+  color:#b42318;
+}
+.drop-zone{
+  border:2px dashed #b8c7da;
+  background:linear-gradient(180deg,#f8fbff 0%,#f1f6fc 100%);
+}
+.drop-hint{
+  margin-top:10px;
+  color:#667085;
+  font-size:13px;
+  font-weight:600;
+}

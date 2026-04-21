@@ -8,8 +8,12 @@ import { ApiService } from '../../core/api.service';
   imports: [CommonModule, ReactiveFormsModule],
   template: `
     <section class="page-top">
-      <div><h1>Contrôle hygiène</h1><p>Export PDF complet avec preuves et dates.</p></div>
+      <div>
+        <h1>Contrôle hygiène</h1>
+        <p>Export PDF complet avec preuves et dates.</p>
+      </div>
     </section>
+
     <div class="card">
       <form [formGroup]="form">
         <div class="form-grid">
@@ -17,8 +21,11 @@ import { ApiService } from '../../core/api.service';
           <input type="month" formControlName="month">
           <input type="number" formControlName="year" placeholder="Année">
         </div>
+
         <div class="modal-actions">
-          <a class="action-btn primary link-btn action-lg" [href]="reportUrl()" target="_blank">📄 Export PDF hygiène</a>
+          <a class="action-btn primary link-btn action-lg" [href]="reportUrl()" target="_blank">
+            📄 Export PDF hygiène
+          </a>
         </div>
       </form>
     </div>
@@ -27,10 +34,16 @@ import { ApiService } from '../../core/api.service';
 export class HygieneReportComponent {
   private api = inject(ApiService);
   private fb = inject(FormBuilder);
-  form = this.fb.nonNullable.group({ day: '', month: '', year: 0 });
+
+  form = this.fb.nonNullable.group({
+    day: '',
+    month: '',
+    year: 0
+  });
+
   reportUrl(): string {
     const v = this.form.getRawValue();
-    const filters:any = {};
+    const filters: any = {};
     if (v.day) filters.day = v.day;
     if (v.month) filters.month = v.month;
     if (v.year && v.year > 0) filters.year = v.year;

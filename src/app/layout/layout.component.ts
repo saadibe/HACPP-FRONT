@@ -31,6 +31,8 @@ import { CommonModule } from '@angular/common';
           <a routerLink="/batches" routerLinkActive="active" (click)="closeMenu()">Lots DLC</a>
           <a routerLink="/alerts/cleaning" routerLinkActive="active" (click)="closeMenu()">Alertes nettoyage</a>
           <a routerLink="/alerts/fridges" routerLinkActive="active" (click)="closeMenu()">Alertes frigos</a>
+          <a routerLink="/users" routerLinkActive="active" (click)="closeMenu()">gestion des utilisateurs</a>
+          <a routerLink="/hygiene-report" routerLinkActive="active" (click)="closeMenu()">rapport hygiene</a>
         </nav>
 
         <div class="sidebar-footer">

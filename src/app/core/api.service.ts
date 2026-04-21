@@ -5,7 +5,7 @@ import { Observable } from 'rxjs';
 declare global {
   interface Window { __APP_CONFIG__?: { apiBaseUrl?: string }; }
 }
-const API_BASE = window.__APP_CONFIG__?.apiBaseUrl || 'https://laperla-haccp-api.onrender.com/api';
+const API_BASE = window.__APP_CONFIG__?.apiBaseUrl || 'http://localhost:8080/api';
 
 export interface LoginRequest { username: string; password: string; }
 export interface LoginResponse { token: string; username: string; role: string; restaurantId: number; }
@@ -77,8 +77,6 @@ export class ApiService {
   deleteInvoice(id: number): Observable<void> { return this.http.delete<void>(`${this.baseUrl}/invoices/${id}`); }
   ocrInvoice(formData: FormData): Observable<InvoiceOcrResponse> { return this.http.post<InvoiceOcrResponse>(`${this.baseUrl}/invoices/ocr`, formData); }
 
-  deleteProofPhoto(photoId: number): Observable<void> { return this.http.delete<void>(`${this.baseUrl}/proof-photos/${photoId}`); }
-
   getTraceabilityProofs(invoiceId: number): Observable<TraceabilityProof[]> { return this.http.get<TraceabilityProof[]>(`${this.baseUrl}/invoices/${invoiceId}/proofs`); }
   createTraceabilityProof(invoiceId: number, formData: FormData): Observable<TraceabilityProof> { return this.http.post<TraceabilityProof>(`${this.baseUrl}/invoices/${invoiceId}/proofs`, formData); }
   deleteTraceabilityProof(proofId: number): Observable<void> { return this.http.delete<void>(`${this.baseUrl}/invoices/proofs/${proofId}`); }
@@ -89,6 +87,7 @@ export class ApiService {
   updateUser(id: number, payload: UpsertUserRequest): Observable<AdminUser> { return this.http.put<AdminUser>(`${this.baseUrl}/users/${id}`, payload); }
   deleteUser(id: number): Observable<void> { return this.http.delete<void>(`${this.baseUrl}/users/${id}`); }
 
+  deleteProofPhoto(photoId: number): Observable<void> { return this.http.delete<void>(`${this.baseUrl}/proof-photos/${photoId}`); }
   reorderFridgeProofPhotos(proofId: number, ids: number[]): Observable<void> { return this.http.put<void>(`${this.baseUrl}/proof-photos/fridge-proofs/${proofId}/reorder`, ids); }
   reorderCleaningProofPhotos(proofId: number, ids: number[]): Observable<void> { return this.http.put<void>(`${this.baseUrl}/proof-photos/cleaning-proofs/${proofId}/reorder`, ids); }
 
@@ -102,6 +101,7 @@ export class ApiService {
     const root = this.baseUrl.replace(/\/api$/, '');
     return `${root}${path}`;
   }
+
   hygieneReportUrl(filters?: {day?: string; month?: string; year?: number}): string {
     let url = `${this.baseUrl}/reports/hygiene.pdf`;
     const params = new URLSearchParams();
