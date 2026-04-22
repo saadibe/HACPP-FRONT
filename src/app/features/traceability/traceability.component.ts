@@ -11,7 +11,7 @@ import { ApiService, Invoice, InvoiceOcrResponse, InvoiceStats, TraceabilityProo
     <section class="page-top">
       <div>
         <h1>Traçabilité</h1>
-        <p>Ajout de plusieurs preuves et plusieurs fichiers sur une même traçabilité.</p>
+        <p>Gestion améliorée des preuves : plusieurs photos dans une même preuve, affichage compact et plus propre.</p>
       </div>
       <button type="button" class="btn-primary-pro action-lg" (click)="openCreateModal()">Nouvelle pièce</button>
     </section>
@@ -61,19 +61,22 @@ import { ApiService, Invoice, InvoiceOcrResponse, InvoiceStats, TraceabilityProo
 
         <div class="proof-list" *ngIf="selectedInvoiceId === invoice.id">
           <div class="proof-card" *ngFor="let proof of (invoiceProofs[invoice.id!] || [])">
-            <div class="multi-preview-grid">
-              <div class="sortable-photo-card" *ngFor="let photo of proof.photos">
-                <img class="preview mini-preview" [src]="api.publicUrl(photo.url)" alt="">
+            <div class="proof-header">
+              <div><strong>{{ proof.createdBy }}</strong></div>
+              <div>{{ proof.createdAt }}</div>
+            </div>
+
+            <p>{{ proof.comment || '-' }}</p>
+
+            <div class="photo-grid">
+              <div *ngFor="let photo of proof.photos">
+                <img class="photo-thumb" [src]="api.publicUrl(photo.url)" alt="">
                 <div class="photo-actions">
-                  <button type="button" class="tiny-btn danger" (click)="deleteTraceabilityPhoto(proof, photo)">✕</button>
+                  <button type="button" class="icon-btn-small tiny-danger" (click)="deleteTraceabilityPhoto(proof, photo)">🗑️</button>
                 </div>
               </div>
             </div>
-            <div class="proof-meta-grid">
-              <div><span>Par</span><strong>{{ proof.createdBy }}</strong></div>
-              <div><span>Date</span><strong>{{ proof.createdAt }}</strong></div>
-            </div>
-            <p>{{ proof.comment || '-' }}</p>
+
             <div class="action-grid">
               <button type="button" class="action-btn subtle" (click)="deleteTraceabilityProof(invoice.id!, proof.id!)">🗑️ Supprimer la preuve</button>
             </div>
@@ -139,19 +142,40 @@ import { ApiService, Invoice, InvoiceOcrResponse, InvoiceStats, TraceabilityProo
           <h3>Nouvelle preuve - {{ currentInvoice.supplierName }}</h3>
           <button class="icon-btn" type="button" (click)="closeProofModal()">×</button>
         </div>
+
         <form [formGroup]="proofCreateForm" (ngSubmit)="submitTraceabilityProof()">
           <div class="form-grid">
             <input formControlName="createdBy" placeholder="Réalisé par">
             <textarea formControlName="comment" placeholder="Commentaire"></textarea>
           </div>
-          <div class="camera-section drop-zone" (dragover)="onZoneDragOver($event)" (drop)="onProofFilesDropped($event)">
-            <label class="picker-btn">
-              📷 Ajouter plusieurs fichiers
-              <input type="file" accept="image/*,.pdf" multiple (change)="onProofFilesPicked($event)" hidden>
-            </label>
-            <div class="drop-hint">Glisse-dépose plusieurs fichiers ici</div>
-            <div class="file-name" *ngIf="proofFiles.length">{{ proofFiles.length }} fichier(s) sélectionné(s)</div>
+
+          <div class="drop-zone" (dragover)="onDragOver($event)" (drop)="onProofFilesDropped($event)">
+            <div class="drop-zone-actions">
+              <label class="icon-action" title="Importer plusieurs fichiers">
+                📎
+                <input type="file" accept="image/*,.pdf" multiple (change)="onProofFilesPicked($event)" hidden>
+              </label>
+
+              <label class="icon-action" title="Prendre une photo">
+                📷
+                <input type="file" accept="image/*" capture="environment" (change)="onProofFilesPicked($event)" hidden>
+              </label>
+
+              <span class="file-counter">{{ proofFiles.length }} fichier(s)</span>
+            </div>
+
+            <div class="drop-hint">Glisse-dépose plusieurs fichiers ou ajoute des photos une par une dans la même preuve.</div>
+
+            <div class="photo-grid" *ngIf="proofFiles.length">
+              <div *ngFor="let file of proofFiles; let i = index" class="sortable-photo-card">
+                <div class="file-name">{{ file.name }}</div>
+                <div class="photo-actions">
+                  <button type="button" class="icon-btn-small tiny-danger" (click)="removeSelectedProofFile(i)">🗑️</button>
+                </div>
+              </div>
+            </div>
           </div>
+
           <div class="modal-actions">
             <button type="button" class="btn-secondary-pro" (click)="closeProofModal()">Annuler</button>
             <button type="submit" class="btn-primary-pro action-lg">Enregistrer la preuve</button>
@@ -254,14 +278,21 @@ export class TraceabilityComponent implements OnInit {
 
   onProofFilesPicked(event: Event): void {
     const input = event.target as HTMLInputElement;
-    this.proofFiles = Array.from(input.files || []);
+    const files = Array.from(input.files || []);
+    this.proofFiles = [...this.proofFiles, ...files];
+    input.value = '';
   }
 
-  onZoneDragOver(event: DragEvent): void { event.preventDefault(); }
+  onDragOver(event: DragEvent): void { event.preventDefault(); }
+
   onProofFilesDropped(event: DragEvent): void {
     event.preventDefault();
     const files = Array.from(event.dataTransfer?.files || []);
     this.proofFiles = [...this.proofFiles, ...files];
+  }
+
+  removeSelectedProofFile(index: number): void {
+    this.proofFiles = this.proofFiles.filter((_, i) => i !== index);
   }
 
   submitTraceabilityProof(): void {

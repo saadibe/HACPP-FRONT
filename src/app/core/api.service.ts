@@ -112,5 +112,17 @@ export class ApiService {
     return qs ? `${url}?${qs}` : url;
   }
 
+  downloadHygieneReport(filters?: {day?: string; month?: string; year?: number}) {
+    let params = new HttpParams();
+    if (filters?.day) params = params.set('day', filters.day);
+    if (filters?.month) params = params.set('month', filters.month);
+    if (filters?.year) params = params.set('year', String(filters.year));
+
+    return this.http.get(`${this.baseUrl}/reports/hygiene.pdf`, {
+      params,
+      responseType: 'blob'
+    });
+  }
+
   reportUrl(): string { return `${this.baseUrl}/batches/report.pdf`; }
 }

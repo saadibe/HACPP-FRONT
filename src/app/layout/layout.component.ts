@@ -24,14 +24,14 @@ import { CommonModule } from '@angular/common';
         </div>
 
         <nav class="nav-links">
-          <a routerLink="/dashboard" routerLinkActive="active" (click)="closeMenu()">Dashboard</a>
-          <a routerLink="/fridges" routerLinkActive="active" (click)="closeMenu()">Frigos</a>
-          <a routerLink="/cleaning-zones" routerLinkActive="active" (click)="closeMenu()">Nettoyage</a>
-          <a routerLink="/traceability" routerLinkActive="active" (click)="closeMenu()">Traçabilité</a>
-          <a routerLink="/batches" routerLinkActive="active" (click)="closeMenu()">Lots DLC</a>
-          <a routerLink="/users" routerLinkActive="active" (click)="closeMenu()">gestion des utilisateurs</a>
-          <a routerLink="/hygiene-report" routerLinkActive="active" (click)="closeMenu()">rapport hygiene</a>
-        </nav>
+                 <a routerLink="/dashboard" routerLinkActive="active" (click)="closeMenu()">Dashboard</a>
+                 <a routerLink="/fridges" routerLinkActive="active" (click)="closeMenu()">Frigos</a>
+                 <a routerLink="/cleaning-zones" routerLinkActive="active" (click)="closeMenu()">Nettoyage</a>
+                 <a routerLink="/traceability" routerLinkActive="active" (click)="closeMenu()">Traçabilité</a>
+                 <a routerLink="/batches" routerLinkActive="active" (click)="closeMenu()">Lots DLC</a>
+                 <a routerLink="/users" routerLinkActive="active" (click)="closeMenu()">gestion des utilisateurs</a>
+                 <a routerLink="/hygiene-report" routerLinkActive="active" (click)="closeMenu()">rapport hygiene</a>
+               </nav>
 
         <div class="sidebar-footer">
           <div class="user-box">
