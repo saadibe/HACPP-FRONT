@@ -29,8 +29,6 @@ import { CommonModule } from '@angular/common';
           <a routerLink="/cleaning-zones" routerLinkActive="active" (click)="closeMenu()">Nettoyage</a>
           <a routerLink="/traceability" routerLinkActive="active" (click)="closeMenu()">Traçabilité</a>
           <a routerLink="/batches" routerLinkActive="active" (click)="closeMenu()">Lots DLC</a>
-          <a routerLink="/alerts/cleaning" routerLinkActive="active" (click)="closeMenu()">Alertes nettoyage</a>
-          <a routerLink="/alerts/fridges" routerLinkActive="active" (click)="closeMenu()">Alertes frigos</a>
           <a routerLink="/users" routerLinkActive="active" (click)="closeMenu()">gestion des utilisateurs</a>
           <a routerLink="/hygiene-report" routerLinkActive="active" (click)="closeMenu()">rapport hygiene</a>
         </nav>
