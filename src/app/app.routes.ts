@@ -9,6 +9,8 @@ import { PrintBatchComponent } from './features/print-batch/print-batch.componen
 import { CleaningAlertsComponent } from './features/alerts/cleaning-alerts.component';
 import { FridgeAlertsComponent } from './features/alerts/fridge-alerts.component';
 import { LayoutComponent } from './layout/layout.component';
+import { HygieneReportComponent } from './features/hygiene-report/hygiene-report.component';
+import { UsersComponent } from './features/users/users.component';
 import { authGuard } from './core/auth.guard';
 
 export const routes: Routes = [
@@ -25,8 +27,8 @@ export const routes: Routes = [
       { path: 'traceability', component: TraceabilityComponent },
       { path: 'batches', component: BatchesComponent },
       { path: 'batches/print/:id', component: PrintBatchComponent },
-      { path: 'alerts/cleaning', component: CleaningAlertsComponent },
-      { path: 'alerts/fridges', component: FridgeAlertsComponent }
+      { path: 'users', component: UsersComponent },
+      { path: 'hygiene-report', component: HygieneReportComponent }
     ]
   },
   { path: '**', redirectTo: 'login' }
