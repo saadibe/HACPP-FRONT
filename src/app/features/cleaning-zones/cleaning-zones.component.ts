@@ -89,50 +89,31 @@ import { ApiService, CleaningProof, CleaningZone, ProofPhoto } from '../../core/
             <textarea formControlName="comment" placeholder="Commentaire"></textarea>
           </div>
 
-<div class="camera-section drop-zone"
-     (dragover)="onZoneDragOver($event)"
-     (dragleave)="onZoneDragLeave($event)"
-     (drop)="onFilesDropped($event)">
+          <div class="camera-section drop-zone"
+               (dragover)="onZoneDragOver($event)"
+               (dragleave)="onZoneDragLeave($event)"
+               (drop)="onFilesDropped($event)">
+            <div class="drop-zone-actions">
+              <label class="icon-action" title="Prendre une photo">
+                📷
+                <input type="file" accept="image/*" capture="environment" (change)="onProofFiles($event)" hidden>
+              </label>
+              <label class="icon-action" title="Importer plusieurs photos">
+                📎
+                <input type="file" accept="image/*" multiple (change)="onProofFiles($event)" hidden>
+              </label>
+              <span class="file-counter">{{ proofFiles.length }} photo(s)</span>
+            </div>
 
-  <div class="drop-zone-actions">
-    <label class="icon-action" title="Prendre une photo">
-      📷
-      <input
-        type="file"
-        accept="image/*"
-        capture="environment"
-        (change)="onProofFiles($event)"
-        hidden>
-    </label>
+            <div class="photo-grid" *ngIf="proofFiles.length">
+              <div class="sortable-photo-card" *ngFor="let file of proofFiles; let i = index">
+                <div class="file-name">{{ file.name }}</div>
+                <button type="button" class="tiny-btn danger" (click)="removeProofFile(i)">✕</button>
+              </div>
+            </div>
 
-    <label class="icon-action" title="Importer plusieurs photos">
-      📎
-      <input
-        type="file"
-        accept="image/*"
-        multiple
-        (change)="onProofFiles($event)"
-        hidden>
-    </label>
-
-    <span class="file-counter">
-      {{ proofFiles.length }} photo(s)
-    </span>
-  </div>
-
-  <div class="photo-grid" *ngIf="proofFiles.length">
-    <div class="sortable-photo-card" *ngFor="let file of proofFiles; let i = index">
-      <div class="file-name">{{ file.name }}</div>
-      <button type="button" class="tiny-btn danger" (click)="removeProofFile(i)">
-        ✕
-      </button>
-    </div>
-  </div>
-
-  <div class="drop-hint">
-    Tu peux prendre une photo, puis revenir et prendre une deuxième dans la même preuve.
-  </div>
-</div>
+            <div class="drop-hint">Tu peux prendre plusieurs photos dans la même preuve.</div>
+          </div>
 
           <div class="modal-actions">
             <button type="button" class="btn-secondary-pro" (click)="closeProofModal()">Annuler</button>
@@ -182,7 +163,13 @@ export class CleaningZonesComponent implements OnInit {
 
   onProofFiles(event: Event): void {
     const input = event.target as HTMLInputElement;
-    this.proofFiles = Array.from(input.files || []);
+    const files = Array.from(input.files || []);
+    this.proofFiles = [...this.proofFiles, ...files];
+    input.value = '';
+  }
+
+  removeProofFile(index: number): void {
+    this.proofFiles = this.proofFiles.filter((_, i) => i !== index);
   }
 
   onZoneDragOver(event: DragEvent): void { event.preventDefault(); }

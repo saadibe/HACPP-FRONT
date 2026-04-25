@@ -1,0 +1,51 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Angular build
+dist/
+build/
+.tmp/
+out-tsc/
+
+# IDE / Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Environment files (sensibles)
+src/environments/*.ts
+!src/environments/environment.ts
+
+# Cache
+.cache/
+.angular/cache/
+
+# Coverage (tests)
+coverage/
+
+# TypeScript
+*.tsbuildinfo
+
+# Firebase (si utilisé)
+.firebase/
+.firebaserc
+
+# Docker (optionnel)
+docker-compose.override.yml
+
+# Misc
+*.tmp
+*.temp

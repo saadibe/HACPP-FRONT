@@ -9,55 +9,49 @@ import { ApiService, DashboardResponse } from '../../core/api.service';
   template: `
     <section class="page-top">
       <div>
-        <h1>Dashboard terrain</h1>
-        <p>Vue rapide des actions urgentes et accès direct aux modules utilisés pendant le service.</p>
+        <h1>Dashboard</h1>
+        <p>Vue rapide des contrôles HACCP et accès direct aux actions terrain.</p>
       </div>
     </section>
 
     <section class="quick-actions-panel">
       <button class="quick-action-card" (click)="go('/fridges')">
         <span class="quick-icon">🌡️</span>
-        <strong>Relevés frigo</strong>
-        <small>Ajouter un relevé ou vérifier les températures</small>
+        <strong>Relevé frigo</strong>
+        <small>Prendre une photo et saisir la température</small>
       </button>
 
       <button class="quick-action-card" (click)="go('/cleaning-zones')">
         <span class="quick-icon">🧼</span>
-        <strong>Preuves nettoyage</strong>
-        <small>Prendre une photo de preuve rapidement</small>
+        <strong>Preuve nettoyage</strong>
+        <small>Photo directe tablette / téléphone</small>
       </button>
 
       <button class="quick-action-card" (click)="go('/traceability')">
         <span class="quick-icon">📦</span>
         <strong>Traçabilité</strong>
-        <small>Importer une facture ou une pièce fournisseur</small>
+        <small>Factures, lots et preuves multiples</small>
       </button>
 
-      <button class="quick-action-card" (click)="go('/batches')">
-        <span class="quick-icon">🏷️</span>
-        <strong>Lots DLC</strong>
-        <small>Créer, imprimer et suivre les étiquettes</small>
+      <button class="quick-action-card" (click)="go('/history')">
+        <span class="quick-icon">🕘</span>
+        <strong>Historique</strong>
+        <small>Consulter les preuves par date et type</small>
       </button>
     </section>
 
     <div class="stats-grid" *ngIf="stats">
-      <div class="stat-card danger clickable" (click)="go('/batches')">
-        <span>DLC expirés</span><strong>{{ stats.expired }}</strong>
-      </div>
-      <div class="stat-card warning clickable" (click)="go('/batches')">
-        <span>DLC bientôt expirés</span><strong>{{ stats.expiringSoon }}</strong>
-      </div>
       <div class="stat-card clickable" (click)="go('/fridges')">
         <span>Frigos</span><strong>{{ stats.fridges }}</strong>
       </div>
-      <div class="stat-card clickable" (click)="go('/traceability?scope=today')">
-        <span>Traçabilité du jour</span><strong>{{ stats.traceabilityToday }}</strong>
+      <div class="stat-card clickable" (click)="go('/traceability')">
+        <span>Traçabilité aujourd'hui</span><strong>{{ stats.traceabilityToday }}</strong>
       </div>
-      <div class="stat-card warning clickable" (click)="go('/alerts/cleaning')">
-        <span>Nettoyages en retard</span><strong>{{ stats.lateCleaning }}</strong>
+      <div class="stat-card clickable" (click)="go('/cleaning-zones')">
+        <span>Nettoyage en retard</span><strong>{{ stats.lateCleaning }}</strong>
       </div>
-      <div class="stat-card danger clickable" (click)="go('/alerts/fridges')">
-        <span>Températures hors plage</span><strong>{{ stats.temperatureAlerts }}</strong>
+      <div class="stat-card clickable" (click)="go('/fridges')">
+        <span>Alertes température</span><strong>{{ stats.temperatureAlerts }}</strong>
       </div>
     </div>
   `
@@ -65,13 +59,17 @@ import { ApiService, DashboardResponse } from '../../core/api.service';
 export class DashboardComponent implements OnInit {
   private api = inject(ApiService);
   private router = inject(Router);
+
   stats?: DashboardResponse;
 
   ngOnInit(): void {
-    this.api.getDashboard().subscribe(res => this.stats = res);
+    this.api.getDashboard().subscribe({
+      next: v => this.stats = v,
+      error: () => {}
+    });
   }
 
-  go(url: string): void {
-    this.router.navigateByUrl(url);
+  go(path: string): void {
+    this.router.navigateByUrl(path);
   }
 }

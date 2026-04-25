@@ -10,7 +10,7 @@ import { ApiService } from '../../core/api.service';
     <section class="page-top">
       <div>
         <h1>Contrôle hygiène</h1>
-        <p>Export PDF complet avec preuves et dates, via une requête authentifiée.</p>
+        <p>Export PDF authentifié avec toutes les preuves datées.</p>
       </div>
     </section>
 
@@ -33,11 +33,7 @@ export class HygieneReportComponent {
   private api = inject(ApiService);
   private fb = inject(FormBuilder);
 
-  form = this.fb.nonNullable.group({
-    day: '',
-    month: '',
-    year: 0
-  });
+  form = this.fb.nonNullable.group({ day: '', month: '', year: 0 });
 
   exportPdf(): void {
     const v = this.form.getRawValue();
