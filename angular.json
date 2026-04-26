@@ -12,6 +12,7 @@
           "builder": "@angular-devkit/build-angular:application",
           "options": {
             "outputPath": "dist/haccp-frontend",
+            "serviceWorker": "ngsw-config.json",
             "index": "src/index.html",
             "browser": "src/main.ts",
             "tsConfig": "tsconfig.app.json",
@@ -26,11 +27,7 @@
           },
           "configurations": {
             "production": {
-              "serviceWorker": "ngsw-config.json",
-              "optimization": true,
-              "outputHashing": "all",
-              "sourceMap": false,
-              "extractLicenses": true
+              "serviceWorker": "ngsw-config.json"
             }
           }
         },

@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1777204163784,
+  "timestamp": 1777205459710,
   "index": "/index.html",
   "assetGroups": [
     {
@@ -12,16 +12,16 @@
       },
       "urls": [
         "/index.html",
-        "/main-A6CXWIRZ.js",
+        "/main.js",
         "/manifest.webmanifest",
-        "/styles-ZCRXPZTW.css"
+        "/styles.css"
       ],
       "patterns": []
     },
     {
       "name": "assets",
       "installMode": "lazy",
-      "updateMode": "prefetch",
+      "updateMode": "lazy",
       "cacheQueryOptions": {
         "ignoreVary": true
       },
@@ -50,10 +50,10 @@
     "/assets/icons/icon-512x512.png": "aba5ce27ce107e3f3419c8557d18ef7478602167",
     "/assets/icons/icon-72x72.png": "ac65a52991291a19bdbc0ba57aa4df352f770cda",
     "/assets/icons/icon-96x96.png": "9418047c32958bae937e165162d7dd136f3ccabf",
-    "/index.html": "86c52b9bf3c4f999afd4f3988d39a0b605d92511",
-    "/main-A6CXWIRZ.js": "bc43b7681ee763d4e8fefc5ab82d522802881625",
+    "/index.html": "42aad943d5e07fd2ec13ee2e00503e2469a56cb8",
+    "/main.js": "bc43b7681ee763d4e8fefc5ab82d522802881625",
     "/manifest.webmanifest": "83df0311dd3d84e011170200e746ca8a3d9ba3e5",
-    "/styles-ZCRXPZTW.css": "588a24620ca579d52f023779d8b8bae4961536c4"
+    "/styles.css": "588a24620ca579d52f023779d8b8bae4961536c4"
   },
   "navigationUrls": [
     {
