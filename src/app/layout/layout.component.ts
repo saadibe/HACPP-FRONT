@@ -1,230 +1,177 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Router, RouterLink, RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-layout',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterOutlet, RouterLink],
   template: `
-    <div class="app-shell">
-      <aside class="sidebar">
-        <div class="brand">
-          <div class="brand-icon">LP</div>
-          <div>
-            <h2>La Perla HACCP</h2>
-            <span>Contrôle hygiène</span>
-          </div>
+  <div class="app-shell">
+
+    <!-- TOP BAR -->
+    <header class="topbar">
+      <div class="logo">LP</div>
+      <div class="title">La Perla HACCP</div>
+
+      <!-- USER -->
+      <div class="user-menu-container">
+        <div class="user-trigger" (click)="toggleUserMenu()">
+          👤 {{ username }} ⌄
         </div>
 
-        <nav class="nav">
-          <a routerLink="/dashboard" routerLinkActive="active">📊 Dashboard</a>
-          <a routerLink="/fridges" routerLinkActive="active">🌡️ Frigos</a>
-          <a routerLink="/cleaning-zones" routerLinkActive="active">🧼 Nettoyage</a>
-          <a routerLink="/traceability" routerLinkActive="active">📦 Traçabilité</a>
-          <a routerLink="/history" routerLinkActive="active">🕘 Historique</a>
-          <a routerLink="/hygiene-report" routerLinkActive="active">📄 Rapport hygiène</a>
-          <a routerLink="/users" routerLinkActive="active">👥 Utilisateurs</a>
-        </nav>
-
-        <div class="user-panel">
-          <button class="user-card" type="button" (click)="toggleUserMenu()">
-            <div class="avatar">{{ userInitial }}</div>
-            <div class="user-text">
-              <strong>{{ username }}</strong>
-              <span>{{ roleLabel }}</span>
-            </div>
-            <span class="chevron">▾</span>
-          </button>
-
-          <div class="user-menu" *ngIf="userMenuOpen">
-            <button type="button" routerLink="/users" (click)="closeUserMenu()">👤 Mon compte</button>
-            <button type="button" routerLink="/history" (click)="closeUserMenu()">🕘 Historique</button>
-            <button type="button" class="danger" (click)="logout()">🚪 Déconnexion</button>
-          </div>
+        <div class="dropdown" *ngIf="showUserMenu">
+          <button (click)="goProfile()">👤 Mon compte</button>
+          <button (click)="goHistory()">🕘 Historique</button>
+          <hr>
+          <button class="logout" (click)="logout()">🚪 Déconnexion</button>
         </div>
-      </aside>
+      </div>
+    </header>
 
-      <main class="content">
-        <router-outlet></router-outlet>
-      </main>
-    </div>
+    <!-- CONTENT -->
+    <main class="app-content">
+      <router-outlet></router-outlet>
+    </main>
+
+    <!-- BOTTOM NAV -->
+    <nav class="bottom-nav">
+      <a routerLink="/dashboard">🏠<span>Home</span></a>
+      <a routerLink="/fridges">❄️<span>Frigo</span></a>
+      <a routerLink="/cleaning-zones">🧼<span>Nettoyage</span></a>
+
+      <!-- bouton central -->
+      <button class="fab" routerLink="/traceability">📷</button>
+
+      <a routerLink="/history">🕘<span>Historique</span></a>
+      <a routerLink="/hygiene-report">📄<span>Rapport</span></a>
+    </nav>
+
+  </div>
   `,
   styles: [`
     .app-shell {
-      min-height: 100vh;
       display: flex;
+      flex-direction: column;
+      height: 100vh;
       background: #f6f8fb;
     }
 
-    .sidebar {
-      width: 280px;
-      background: linear-gradient(180deg, #0f4c81 0%, #09365e 100%);
-      color: #fff;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 22px;
-      box-shadow: 8px 0 24px rgba(15, 76, 129, .12);
-    }
-
-    .brand {
+    /* TOP BAR */
+    .topbar {
       display: flex;
       align-items: center;
-      gap: 12px;
+      justify-content: space-between;
+      background: #0f4c81;
+      color: white;
+      padding: 10px 16px;
     }
 
-    .brand-icon {
-      width: 52px;
-      height: 52px;
-      border-radius: 16px;
-      background: rgba(255,255,255,.16);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 900;
-      letter-spacing: .5px;
+    .logo {
+      background: white;
+      color: #0f4c81;
+      font-weight: bold;
+      padding: 6px 10px;
+      border-radius: 8px;
     }
 
-    .brand h2 {
-      margin: 0;
-      font-size: 18px;
-      line-height: 1.1;
+    .title {
+      font-weight: bold;
     }
 
-    .brand span {
-      font-size: 12px;
-      opacity: .78;
-    }
-
-    .nav {
-      display: grid;
-      gap: 9px;
-    }
-
-    .nav a {
-      color: #fff;
-      text-decoration: none;
-      padding: 12px 14px;
-      border-radius: 14px;
-      font-weight: 800;
-      background: rgba(255,255,255,.08);
-      transition: .15s ease;
-    }
-
-    .nav a:hover,
-    .nav a.active {
-      background: rgba(255,255,255,.18);
-      transform: translateX(2px);
-    }
-
-    .user-panel {
-      margin-top: auto;
+    /* USER */
+    .user-menu-container {
       position: relative;
     }
 
-    .user-card {
-      width: 100%;
-      border: none;
-      color: #fff;
-      background: rgba(255,255,255,.12);
-      border-radius: 18px;
-      padding: 12px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
+    .user-trigger {
       cursor: pointer;
-      text-align: left;
+      font-weight: bold;
     }
 
-    .avatar {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      background: rgba(255,255,255,.22);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 900;
-      font-size: 18px;
-    }
-
-    .user-text {
-      flex: 1;
-      display: grid;
-      gap: 2px;
-    }
-
-    .user-text strong {
-      font-size: 14px;
-    }
-
-    .user-text span {
-      font-size: 12px;
-      opacity: .8;
-    }
-
-    .chevron {
-      opacity: .75;
-    }
-
-    .user-menu {
-      margin-top: 8px;
-      background: #fff;
-      border-radius: 16px;
-      padding: 8px;
-      box-shadow: 0 16px 30px rgba(0,0,0,.15);
-    }
-
-    .user-menu button {
-      width: 100%;
-      border: none;
-      background: transparent;
-      padding: 11px 12px;
+    .dropdown {
+      position: absolute;
+      right: 0;
+      top: 35px;
+      background: white;
+      color: black;
       border-radius: 12px;
-      text-align: left;
-      color: #0f4c81;
-      font-weight: 800;
-      cursor: pointer;
+      padding: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      min-width: 160px;
     }
 
-    .user-menu button:hover {
+    .dropdown button {
+      display: block;
+      width: 100%;
+      border: none;
+      background: none;
+      padding: 8px;
+      text-align: left;
+      cursor: pointer;
+      border-radius: 8px;
+    }
+
+    .dropdown button:hover {
       background: #eef4fb;
     }
 
-    .user-menu .danger {
-      color: #b42318;
+    .dropdown hr {
+      border: none;
+      border-top: 1px solid #ddd;
+      margin: 6px 0;
     }
 
-    .content {
+    .logout {
+      color: red;
+      font-weight: bold;
+    }
+
+    /* CONTENT */
+    .app-content {
       flex: 1;
-      padding: 22px;
       overflow: auto;
+      padding: 10px;
     }
 
-    @media (max-width: 900px) {
-      .app-shell {
-        display: block;
-      }
+    /* BOTTOM NAV */
+    .bottom-nav {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      background: #0f4c81;
+      padding: 8px;
+      position: sticky;
+      bottom: 0;
+    }
 
-      .sidebar {
-        width: auto;
-        min-height: auto;
-        border-radius: 0 0 24px 24px;
-      }
+    .bottom-nav a {
+      color: white;
+      text-decoration: none;
+      font-size: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
 
-      .nav {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      .content {
-        padding: 14px;
-      }
+    /* BOUTON CENTRAL */
+    .fab {
+      background: #ff6b00;
+      border: none;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      color: white;
+      font-size: 24px;
+      margin-top: -30px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      cursor: pointer;
     }
   `]
 })
 export class LayoutComponent {
-  userMenuOpen = false;
+
+  showUserMenu = false;
 
   constructor(private router: Router) {}
 
@@ -232,26 +179,20 @@ export class LayoutComponent {
     return localStorage.getItem('username') || 'Utilisateur';
   }
 
-  get userInitial(): string {
-    return this.username.charAt(0).toUpperCase();
-  }
-
-  get roleLabel(): string {
-    const role = localStorage.getItem('role') || '';
-    if (role.includes('ADMIN')) return 'Administrateur';
-    return 'Équipe';
-  }
-
   toggleUserMenu(): void {
-    this.userMenuOpen = !this.userMenuOpen;
-  }
-
-  closeUserMenu(): void {
-    this.userMenuOpen = false;
+    this.showUserMenu = !this.showUserMenu;
   }
 
   logout(): void {
     localStorage.clear();
     this.router.navigate(['/login']);
+  }
+
+  goProfile(): void {
+    this.router.navigate(['/users']);
+  }
+
+  goHistory(): void {
+    this.router.navigate(['/history']);
   }
 }
