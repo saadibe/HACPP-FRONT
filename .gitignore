@@ -6,7 +6,6 @@ yarn-error.log*
 pnpm-debug.log*
 
 # Angular build
-dist/
 build/
 .tmp/
 out-tsc/
