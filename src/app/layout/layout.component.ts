@@ -73,8 +73,8 @@ import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/rou
           <span>Nettoyage</span>
         </a>
 
-        <a routerLink="/traceability" routerLinkActive="active" class="center-nav">
-          <span class="center-icon">📋</span>
+        <a routerLink="/traceability" routerLinkActive="active">
+          <span class="nav-icon">📋</span>
           <span>Traçabilité</span>
         </a>
 
