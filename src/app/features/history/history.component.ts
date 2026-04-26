@@ -1,32 +1,38 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ApiService, CleaningProof, FridgeProof, Invoice, TraceabilityProof } from '../../core/api.service';
 
-type HistoryItem = {
-  date: string;
-  type: string;
+type HistoryType = 'ALL' | 'FRIDGE' | 'CLEANING' | 'TRACEABILITY';
+
+interface HistoryItem {
+  type: HistoryType;
+  label: string;
   title: string;
-  createdBy: string;
-  comment: string;
+  date?: string;
+  createdBy?: string;
+  comment?: string;
   photosCount: number;
-};
+}
 
 @Component({
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   template: `
-    <section class="page-top">
+    <section class="page-head">
       <div>
         <h1>Historique des preuves</h1>
-        <p>Toutes les preuves HACCP classées par date et par type.</p>
+        <p>Toutes les preuves HACCP classées par date, type et utilisateur.</p>
       </div>
     </section>
 
-    <div class="history-filters">
-      <button class="chip" [class.active]="filter === 'ALL'" (click)="filter='ALL'">Tout</button>
-      <button class="chip" [class.active]="filter === 'FRIDGE'" (click)="filter='FRIDGE'">Frigo</button>
-      <button class="chip" [class.active]="filter === 'CLEANING'" (click)="filter='CLEANING'">Nettoyage</button>
-      <button class="chip" [class.active]="filter === 'TRACEABILITY'" (click)="filter='TRACEABILITY'">Traçabilité</button>
+    <div class="history-toolbar">
+      <input type="date" [(ngModel)]="selectedDate">
+
+      <button class="chip" [class.active]="type === 'ALL'" (click)="type='ALL'">Tout</button>
+      <button class="chip" [class.active]="type === 'FRIDGE'" (click)="type='FRIDGE'">Frigo</button>
+      <button class="chip" [class.active]="type === 'CLEANING'" (click)="type='CLEANING'">Nettoyage</button>
+      <button class="chip" [class.active]="type === 'TRACEABILITY'" (click)="type='TRACEABILITY'">Traçabilité</button>
     </div>
 
     <div class="cards-grid">
@@ -34,23 +40,64 @@ type HistoryItem = {
         <div class="entity-head">
           <div>
             <strong>{{ item.title }}</strong>
-            <p class="entity-subtitle">{{ item.type }}</p>
+            <p class="entity-subtitle">{{ item.label }}</p>
           </div>
-          <span class="badge">{{ item.date }}</span>
+          <span class="badge">{{ item.date || '-' }}</span>
         </div>
+
         <div class="trace-meta-grid">
-          <div><span>Par</span><strong>{{ item.createdBy }}</strong></div>
+          <div><span>Par</span><strong>{{ item.createdBy || '-' }}</strong></div>
           <div><span>Photos</span><strong>{{ item.photosCount }}</strong></div>
         </div>
+
         <p>{{ item.comment || '-' }}</p>
       </div>
     </div>
-  `
+  `,
+  styles: [`
+    .page-head { margin-bottom: 18px; }
+    .page-head h1 { margin: 0; font-size: 30px; color: #101828; }
+    .page-head p { margin: 4px 0 0; color: #667085; }
+
+    .history-toolbar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+      background: white;
+      border: 1px solid #e4e7ec;
+      border-radius: 18px;
+      padding: 12px;
+    }
+
+    .history-toolbar input {
+      border: 1px solid #d0d5dd;
+      border-radius: 12px;
+      padding: 9px 12px;
+    }
+
+    .chip {
+      border: none;
+      border-radius: 999px;
+      padding: 9px 14px;
+      background: #eef4fb;
+      color: #0f4c81;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .chip.active {
+      background: #0f4c81;
+      color: white;
+    }
+  `]
 })
 export class HistoryComponent implements OnInit {
   private api = inject(ApiService);
+
   history: HistoryItem[] = [];
-  filter: 'ALL' | 'FRIDGE' | 'CLEANING' | 'TRACEABILITY' = 'ALL';
+  type: HistoryType = 'ALL';
+  selectedDate = '';
 
   ngOnInit(): void {
     this.loadFridges();
@@ -59,14 +106,16 @@ export class HistoryComponent implements OnInit {
   }
 
   filteredHistory(): HistoryItem[] {
-    if (this.filter === 'ALL') return this.history;
-    if (this.filter === 'FRIDGE') return this.history.filter(x => x.type === 'Preuve frigo');
-    if (this.filter === 'CLEANING') return this.history.filter(x => x.type === 'Preuve nettoyage');
-    return this.history.filter(x => x.type === 'Preuve traçabilité');
+    return this.history.filter(item => {
+      const matchType = this.type === 'ALL' || item.type === this.type;
+      const matchDate = !this.selectedDate || (item.date || '').startsWith(this.selectedDate);
+      return matchType && matchDate;
+    });
   }
 
   private push(items: HistoryItem[]): void {
-    this.history = [...this.history, ...items].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+    this.history = [...this.history, ...items]
+      .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
   }
 
   private loadFridges(): void {
@@ -75,11 +124,12 @@ export class HistoryComponent implements OnInit {
         if (!fridge.id) return;
         this.api.getFridgeProofs(fridge.id).subscribe((proofs: FridgeProof[]) => {
           this.push(proofs.map(p => ({
-            date: p.createdAt || '',
-            type: 'Preuve frigo',
+            type: 'FRIDGE',
+            label: 'Preuve frigo',
             title: fridge.name,
+            date: p.createdAt,
             createdBy: p.createdBy,
-            comment: p.comment || '',
+            comment: p.comment,
             photosCount: p.photos?.length || 0
           })));
         });
@@ -93,11 +143,12 @@ export class HistoryComponent implements OnInit {
         if (!zone.id) return;
         this.api.getCleaningProofs(zone.id).subscribe((proofs: CleaningProof[]) => {
           this.push(proofs.map(p => ({
-            date: p.createdAt || '',
-            type: 'Preuve nettoyage',
+            type: 'CLEANING',
+            label: 'Preuve nettoyage',
             title: zone.name,
+            date: p.createdAt,
             createdBy: p.createdBy,
-            comment: p.comment || '',
+            comment: p.comment,
             photosCount: p.photos?.length || 0
           })));
         });
@@ -111,11 +162,12 @@ export class HistoryComponent implements OnInit {
         if (!invoice.id) return;
         this.api.getTraceabilityProofs(invoice.id).subscribe((proofs: TraceabilityProof[]) => {
           this.push(proofs.map(p => ({
-            date: p.createdAt || '',
-            type: 'Preuve traçabilité',
+            type: 'TRACEABILITY',
+            label: 'Preuve traçabilité',
             title: invoice.supplierName,
+            date: p.createdAt,
             createdBy: p.createdBy,
-            comment: p.comment || '',
+            comment: p.comment,
             photosCount: p.photos?.length || 0
           })));
         });

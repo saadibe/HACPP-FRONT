@@ -10,9 +10,11 @@ import { ApiService, CleaningProof, CleaningZone, ProofPhoto } from '../../core/
     <section class="page-top">
       <div>
         <h1>Zones de nettoyage</h1>
-        <p>Suppression photo par photo et réorganisation facile.</p>
+        <p>Preuves du jour uniquement. L’historique complet est disponible dans la page Historique.</p>
       </div>
-      <button type="button" class="btn-primary-pro action-lg" (click)="openZoneModal()">Nouvelle zone</button>
+      <button type="button" class="btn-primary-pro action-lg" (click)="openZoneModal()">
+        Nouvelle zone
+      </button>
     </section>
 
     <div class="cards-grid">
@@ -26,30 +28,60 @@ import { ApiService, CleaningProof, CleaningZone, ProofPhoto } from '../../core/
         </div>
 
         <div class="action-grid">
-          <button type="button" class="action-btn primary" (click)="openProofModal(zone)">📷 Nouvelle preuve</button>
-          <button type="button" class="action-btn" (click)="toggleProofs(zone)">🕘 Voir preuves</button>
+          <button type="button" class="action-btn primary" (click)="openProofModal(zone)">
+            📷 Nouvelle preuve
+          </button>
+          <button type="button" class="action-btn" (click)="toggleProofs(zone)">
+            🕘 Preuves du jour
+          </button>
         </div>
 
         <div class="proof-list" *ngIf="selectedZoneId === zone.id">
+          <div class="empty-state" *ngIf="!proofs.length">
+            Aucune preuve aujourd’hui pour cette zone.
+          </div>
+
           <div class="proof-card" *ngFor="let proof of proofs">
             <div class="multi-preview-grid">
-              <div class="sortable-photo-card" *ngFor="let photo of proof.photos; let i = index"
-                   draggable="true"
-                   (dragstart)="onDragStart(i)"
-                   (dragover)="$event.preventDefault()"
-                   (drop)="onCleaningDrop(proof, i)">
+              <div
+                class="sortable-photo-card"
+                *ngFor="let photo of proof.photos; let i = index"
+                draggable="true"
+                (dragstart)="onDragStart(i)"
+                (dragover)="$event.preventDefault()"
+                (drop)="onCleaningDrop(proof, i)"
+              >
                 <img class="preview mini-preview" [src]="api.publicUrl(photo.url)" alt="">
                 <div class="photo-actions">
-                  <button type="button" class="tiny-btn" *ngIf="i>0" (click)="movePhotoLeft(proof, i)">←</button>
-                  <button type="button" class="tiny-btn" *ngIf="i < (proof.photos?.length || 0)-1" (click)="movePhotoRight(proof, i)">→</button>
-                  <button type="button" class="tiny-btn danger" (click)="deletePhoto(proof, photo)">✕</button>
+                  <button type="button" class="tiny-btn" *ngIf="i > 0" (click)="movePhotoLeft(proof, i)">
+                    ←
+                  </button>
+                  <button
+                    type="button"
+                    class="tiny-btn"
+                    *ngIf="i < (proof.photos?.length || 0) - 1"
+                    (click)="movePhotoRight(proof, i)"
+                  >
+                    →
+                  </button>
+                  <button type="button" class="tiny-btn danger" (click)="deletePhoto(proof, photo)">
+                    ✕
+                  </button>
                 </div>
               </div>
             </div>
+
             <div class="proof-meta-grid">
-              <div><span>Par</span><strong>{{ proof.createdBy }}</strong></div>
-              <div><span>Date</span><strong>{{ proof.createdAt }}</strong></div>
+              <div>
+                <span>Par</span>
+                <strong>{{ proof.createdBy }}</strong>
+              </div>
+              <div>
+                <span>Date</span>
+                <strong>{{ proof.createdAt }}</strong>
+              </div>
             </div>
+
             <p>{{ proof.comment || '-' }}</p>
           </div>
         </div>
@@ -62,15 +94,21 @@ import { ApiService, CleaningProof, CleaningZone, ProofPhoto } from '../../core/
           <h3>Nouvelle zone de nettoyage</h3>
           <button class="icon-btn" type="button" (click)="closeZoneModal()">×</button>
         </div>
+
         <form [formGroup]="zoneForm" (ngSubmit)="submitZone()">
           <div class="form-grid">
             <input formControlName="name" placeholder="Nom de la zone">
             <input formControlName="scheduledTime" type="time" placeholder="Heure de nettoyage">
             <textarea formControlName="description" placeholder="Description"></textarea>
           </div>
+
           <div class="modal-actions">
-            <button type="button" class="btn-secondary-pro" (click)="closeZoneModal()">Annuler</button>
-            <button type="submit" class="btn-primary-pro">Enregistrer</button>
+            <button type="button" class="btn-secondary-pro" (click)="closeZoneModal()">
+              Annuler
+            </button>
+            <button type="submit" class="btn-primary-pro">
+              Enregistrer
+            </button>
           </div>
         </form>
       </div>
@@ -89,35 +127,59 @@ import { ApiService, CleaningProof, CleaningZone, ProofPhoto } from '../../core/
             <textarea formControlName="comment" placeholder="Commentaire"></textarea>
           </div>
 
-          <div class="camera-section drop-zone"
-               (dragover)="onZoneDragOver($event)"
-               (dragleave)="onZoneDragLeave($event)"
-               (drop)="onFilesDropped($event)">
+          <div
+            class="camera-section drop-zone"
+            (dragover)="onZoneDragOver($event)"
+            (dragleave)="onZoneDragLeave($event)"
+            (drop)="onFilesDropped($event)"
+          >
             <div class="drop-zone-actions">
               <label class="icon-action" title="Prendre une photo">
                 📷
-                <input type="file" accept="image/*" capture="environment" (change)="onProofFiles($event)" hidden>
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  (change)="onProofFiles($event)"
+                  hidden
+                >
               </label>
+
               <label class="icon-action" title="Importer plusieurs photos">
                 📎
-                <input type="file" accept="image/*" multiple (change)="onProofFiles($event)" hidden>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  (change)="onProofFiles($event)"
+                  hidden
+                >
               </label>
+
               <span class="file-counter">{{ proofFiles.length }} photo(s)</span>
             </div>
 
             <div class="photo-grid" *ngIf="proofFiles.length">
               <div class="sortable-photo-card" *ngFor="let file of proofFiles; let i = index">
                 <div class="file-name">{{ file.name }}</div>
-                <button type="button" class="tiny-btn danger" (click)="removeProofFile(i)">✕</button>
+                <button type="button" class="tiny-btn danger" (click)="removeProofFile(i)">
+                  ✕
+                </button>
               </div>
             </div>
 
-            <div class="drop-hint">Tu peux prendre plusieurs photos dans la même preuve.</div>
+            <div class="drop-hint">
+              Tu peux prendre plusieurs photos dans la même preuve avant validation.
+            </div>
           </div>
 
           <div class="modal-actions">
-            <button type="button" class="btn-secondary-pro" (click)="closeProofModal()">Annuler</button>
-            <button type="submit" class="btn-primary-pro action-lg">Valider la preuve</button>
+            <button type="button" class="btn-secondary-pro" (click)="closeProofModal()">
+              Annuler
+            </button>
+            <button type="submit" class="btn-primary-pro action-lg">
+              Valider la preuve
+            </button>
           </div>
         </form>
       </div>
@@ -139,32 +201,85 @@ export class CleaningZonesComponent implements OnInit {
   showZoneModal = false;
   showProofModal = false;
 
-  zoneForm = this.fb.nonNullable.group({ name: '', description: '', scheduledTime: '15:00' });
-  proofForm = this.fb.nonNullable.group({ createdBy: '', comment: '' });
+  zoneForm = this.fb.nonNullable.group({
+    name: '',
+    description: '',
+    scheduledTime: '15:00'
+  });
 
-  ngOnInit(): void { this.loadZones(); }
-  loadZones(): void { this.api.getCleaningZones().subscribe(data => this.zones = data); }
+  proofForm = this.fb.nonNullable.group({
+    createdBy: localStorage.getItem('username') || '',
+    comment: ''
+  });
 
-  openZoneModal(): void { this.showZoneModal = true; }
-  closeZoneModal(): void { this.showZoneModal = false; this.zoneForm.reset({ name: '', description: '', scheduledTime: '15:00' }); }
+  ngOnInit(): void {
+    this.loadZones();
+  }
+
+  loadZones(): void {
+    this.api.getCleaningZones().subscribe(data => this.zones = data);
+  }
+
+  openZoneModal(): void {
+    this.showZoneModal = true;
+  }
+
+  closeZoneModal(): void {
+    this.showZoneModal = false;
+    this.zoneForm.reset({
+      name: '',
+      description: '',
+      scheduledTime: '15:00'
+    });
+  }
 
   submitZone(): void {
-    this.api.createCleaningZone(this.zoneForm.getRawValue()).subscribe(() => { this.closeZoneModal(); this.loadZones(); });
+    this.api.createCleaningZone(this.zoneForm.getRawValue()).subscribe(() => {
+      this.closeZoneModal();
+      this.loadZones();
+    });
   }
 
   toggleProofs(zone: CleaningZone): void {
-    if (this.selectedZoneId === zone.id) { this.selectedZoneId = undefined; this.proofs = []; return; }
+    if (this.selectedZoneId === zone.id) {
+      this.selectedZoneId = undefined;
+      this.proofs = [];
+      return;
+    }
+
     this.selectedZoneId = zone.id;
-    this.api.getCleaningProofs(zone.id!).subscribe(data => this.proofs = data);
+
+    this.api.getCleaningProofs(zone.id!).subscribe(data => {
+      this.proofs = data.filter(p => this.isToday(p.createdAt));
+    });
   }
 
-  openProofModal(zone: CleaningZone): void { this.currentZone = zone; this.showProofModal = true; }
-  closeProofModal(): void { this.showProofModal = false; this.currentZone = undefined; this.proofFiles = []; this.proofForm.reset({ createdBy: '', comment: '' }); }
+  openProofModal(zone: CleaningZone): void {
+    this.currentZone = zone;
+    this.proofFiles = [];
+    this.proofForm.reset({
+      createdBy: localStorage.getItem('username') || '',
+      comment: ''
+    });
+    this.showProofModal = true;
+  }
+
+  closeProofModal(): void {
+    this.showProofModal = false;
+    this.currentZone = undefined;
+    this.proofFiles = [];
+    this.proofForm.reset({
+      createdBy: localStorage.getItem('username') || '',
+      comment: ''
+    });
+  }
 
   onProofFiles(event: Event): void {
     const input = event.target as HTMLInputElement;
     const files = Array.from(input.files || []);
+
     this.proofFiles = [...this.proofFiles, ...files];
+
     input.value = '';
   }
 
@@ -172,57 +287,98 @@ export class CleaningZonesComponent implements OnInit {
     this.proofFiles = this.proofFiles.filter((_, i) => i !== index);
   }
 
-  onZoneDragOver(event: DragEvent): void { event.preventDefault(); }
-  onZoneDragLeave(event: DragEvent): void { event.preventDefault(); }
+  onZoneDragOver(event: DragEvent): void {
+    event.preventDefault();
+  }
+
+  onZoneDragLeave(event: DragEvent): void {
+    event.preventDefault();
+  }
+
   onFilesDropped(event: DragEvent): void {
     event.preventDefault();
-    const files = Array.from(event.dataTransfer?.files || []).filter(f => f.type.startsWith('image/'));
+
+    const files = Array.from(event.dataTransfer?.files || [])
+      .filter(file => file.type.startsWith('image/'));
+
     this.proofFiles = [...this.proofFiles, ...files];
   }
 
   submitProof(): void {
     if (!this.currentZone?.id || !this.proofFiles.length) return;
+
     const value = this.proofForm.getRawValue();
     const fd = new FormData();
-    fd.append('createdBy', value.createdBy);
-    fd.append('comment', value.comment);
-    this.proofFiles.forEach(f => fd.append('photos', f));
+
+    fd.append('createdBy', value.createdBy || localStorage.getItem('username') || 'Utilisateur');
+    fd.append('comment', value.comment || '');
+
+    this.proofFiles.forEach(file => {
+      fd.append('photos', file);
+    });
+
     this.api.createCleaningProof(this.currentZone.id, fd).subscribe(() => {
       const zone = this.currentZone!;
       this.closeProofModal();
       this.selectedZoneId = zone.id;
-      this.api.getCleaningProofs(zone.id!).subscribe(data => this.proofs = data);
+
+      this.api.getCleaningProofs(zone.id!).subscribe(data => {
+        this.proofs = data.filter(p => this.isToday(p.createdAt));
+      });
     });
   }
 
-  onDragStart(index: number): void { this.dragIndex = index; }
+  onDragStart(index: number): void {
+    this.dragIndex = index;
+  }
+
   onCleaningDrop(proof: CleaningProof, dropIndex: number): void {
     if (this.dragIndex < 0 || !proof.photos) return;
+
     const arr = [...proof.photos];
     const [item] = arr.splice(this.dragIndex, 1);
     arr.splice(dropIndex, 0, item);
+
     proof.photos = arr;
     this.dragIndex = -1;
+
     this.api.reorderCleaningProofPhotos(proof.id!, arr.map(p => p.id!)).subscribe();
   }
+
   movePhotoLeft(proof: CleaningProof, index: number): void {
     if (!proof.photos || index <= 0) return;
+
     const arr = [...proof.photos];
     [arr[index - 1], arr[index]] = [arr[index], arr[index - 1]];
+
     proof.photos = arr;
     this.api.reorderCleaningProofPhotos(proof.id!, arr.map(p => p.id!)).subscribe();
   }
+
   movePhotoRight(proof: CleaningProof, index: number): void {
-    if (!proof.photos || index >= arr_len(proof.photos)-1) return;
+    if (!proof.photos || index >= proof.photos.length - 1) return;
+
     const arr = [...proof.photos];
     [arr[index + 1], arr[index]] = [arr[index], arr[index + 1]];
+
     proof.photos = arr;
     this.api.reorderCleaningProofPhotos(proof.id!, arr.map(p => p.id!)).subscribe();
   }
+
   deletePhoto(proof: CleaningProof, photo: ProofPhoto): void {
     this.api.deleteProofPhoto(photo.id!).subscribe(() => {
       proof.photos = (proof.photos || []).filter(p => p.id !== photo.id);
     });
   }
+
+  isToday(date?: string): boolean {
+    if (!date) return false;
+
+    const d = new Date(date);
+    const t = new Date();
+
+    return d.getFullYear() === t.getFullYear()
+      && d.getMonth() === t.getMonth()
+      && d.getDate() === t.getDate();
+  }
 }
-function arr_len<T>(a: T[]): number { return a.length; }
