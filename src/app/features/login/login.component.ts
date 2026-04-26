@@ -30,21 +30,19 @@ import { ApiService } from '../../core/api.service';
           </div>
         </div>
 
-        <form [formGroup]="form" (ngSubmit)="submit()" class="login-form-pro">
-          <label>
-            <span>Nom d'utilisateur</span>
-            <input formControlName="username" placeholder="admin">
-          </label>
+        <form [formGroup]="form" (ngSubmit)="login()">
+          <label>Nom d'utilisateur</label>
+          <input formControlName="username" autocomplete="username" placeholder="admin">
 
-          <label>
-            <span>Mot de passe</span>
-            <input formControlName="password" type="password" placeholder="••••••••">
-          </label>
+          <label>Mot de passe</label>
+          <input type="password" formControlName="password" autocomplete="current-password" placeholder="••••••••">
 
-          <button type="submit" class="btn-primary-pro">Se connecter</button>
+          <button type="submit" [disabled]="loading">
+            {{ loading ? 'Connexion...' : 'Se connecter' }}
+          </button>
+
+          <p class="error" *ngIf="error">{{ error }}</p>
         </form>
-
-        <p *ngIf="error" class="error-text">{{ error }}</p>
       </div>
     </div>
   `
@@ -54,31 +52,36 @@ export class LoginComponent implements OnInit {
   private api = inject(ApiService);
   private router = inject(Router);
 
+  loading = false;
   error = '';
 
   form = this.fb.nonNullable.group({
-    username: '',
+    username: 'admin',
     password: ''
   });
 
   ngOnInit(): void {
     if (localStorage.getItem('token')) {
-      this.router.navigateByUrl('/dashboard');
+      this.router.navigate(['/dashboard']);
     }
   }
 
-  submit(): void {
+  login(): void {
+    this.loading = true;
     this.error = '';
 
     this.api.login(this.form.getRawValue()).subscribe({
-      next: (res) => {
+      next: (res: any) => {
         localStorage.setItem('token', res.token);
-        localStorage.setItem('username', res.username);
-        localStorage.setItem('role', res.role);
-        localStorage.setItem('restaurantId', String(res.restaurantId));
-        this.router.navigateByUrl('/dashboard');
+        localStorage.setItem('username', res.username || this.form.getRawValue().username);
+        localStorage.setItem('role', res.role || '');
+        localStorage.setItem('restaurantId', String(res.restaurantId || ''));
+
+        this.loading = false;
+        this.router.navigate(['/dashboard']);
       },
       error: () => {
+        this.loading = false;
         this.error = 'Connexion impossible';
       }
     });

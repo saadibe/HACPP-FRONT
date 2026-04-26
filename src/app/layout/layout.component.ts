@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import {Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
 @Component({
     selector: 'app-layout',
@@ -75,6 +75,7 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 })
 export class LayoutComponent {
   userMenuOpen = false;
+  constructor(private router: Router) {}
 
   get username(): string {
     return localStorage.getItem('username') || 'Utilisateur';
@@ -89,8 +90,8 @@ export class LayoutComponent {
     this.userMenuOpen = !this.userMenuOpen;
   }
 
-  logout(): void {
-    localStorage.clear();
-    location.href = '/login';
-  }
+logout(): void {
+  localStorage.clear();
+  this.router.navigate(['/login']);
+}
 }
