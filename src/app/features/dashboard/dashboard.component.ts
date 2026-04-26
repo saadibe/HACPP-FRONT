@@ -7,255 +7,408 @@ import { ApiService, DashboardResponse } from '../../core/api.service';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <section class="page-head">
-      <div>
+    <section class="dashboard-page">
+
+      <div class="dashboard-head">
         <h1>Dashboard HACCP</h1>
         <p>Résumé du jour et accès rapide aux contrôles terrain.</p>
       </div>
 
-      <button class="refresh-btn" type="button" (click)="load()">
-        Actualiser
-      </button>
-    </section>
+      <section class="quick-grid">
+        <button class="quick-card blue" type="button" (click)="go('/fridges')">
+          <div class="icon-circle blue-bg">🌡️</div>
+          <div>
+            <strong>Relevé frigo</strong>
+            <span>Température + photo preuve</span>
+          </div>
+          <b>›</b>
+        </button>
 
-    <section class="quick-grid">
-      <button class="quick-card blue" type="button" (click)="go('/fridges')">
-        <span class="icon">🌡️</span>
-        <strong>Relevé frigo</strong>
-        <small>Température + photo preuve</small>
-      </button>
+        <button class="quick-card green" type="button" (click)="go('/cleaning-zones')">
+          <div class="icon-circle pink-bg">🧽</div>
+          <div>
+            <strong>Preuve nettoyage</strong>
+            <span>Photo directe tablette</span>
+          </div>
+          <b>›</b>
+        </button>
 
-      <button class="quick-card green" type="button" (click)="go('/cleaning-zones')">
-        <span class="icon">🧼</span>
-        <strong>Preuve nettoyage</strong>
-        <small>Photo directe tablette</small>
-      </button>
+        <button class="quick-card amber" type="button" (click)="go('/traceability')">
+          <div class="icon-circle amber-bg">📋</div>
+          <div>
+            <strong>Traçabilité</strong>
+            <span>Factures, lots, DLC</span>
+          </div>
+          <b>›</b>
+        </button>
 
-      <button class="quick-card amber" type="button" (click)="go('/traceability')">
-        <span class="icon">📦</span>
-        <strong>Traçabilité</strong>
-        <small>Factures, lots, DLC</small>
-      </button>
+        <button class="quick-card purple" type="button" (click)="go('/history')">
+          <div class="icon-circle purple-bg">🕘</div>
+          <div>
+            <strong>Historique</strong>
+            <span>Preuves par date et type</span>
+          </div>
+          <b>›</b>
+        </button>
 
-      <button class="quick-card gray" type="button" (click)="go('/history')">
-        <span class="icon">🕘</span>
-        <strong>Historique</strong>
-        <small>Preuves par date et type</small>
-      </button>
-    </section>
+        <button class="quick-card red" type="button" (click)="go('/fridges')">
+          <div class="icon-circle red-bg">🔔</div>
+          <div>
+            <strong>Alertes température</strong>
+            <span>Surveillance des écarts</span>
+          </div>
+          <b>›</b>
+        </button>
+      </section>
 
-    <section class="kpi-grid" *ngIf="stats">
-      <div class="kpi-card">
-        <span>Frigos</span>
-        <strong>{{ stats.fridges }}</strong>
-      </div>
+      <section class="kpi-grid" *ngIf="stats">
+        <div class="kpi-card">
+          <div class="kpi-icon blue-bg">🧊</div>
+          <div>
+            <span>Frigos</span>
+            <strong>{{ stats.fridges }}</strong>
+            <small>À contrôler</small>
+          </div>
+        </div>
 
-      <div class="kpi-card">
-        <span>Traçabilité aujourd'hui</span>
-        <strong>{{ stats.traceabilityToday }}</strong>
-      </div>
+        <div class="kpi-card">
+          <div class="kpi-icon green-bg">✅</div>
+          <div>
+            <span>Traçabilité aujourd'hui</span>
+            <strong class="green-text">{{ stats.traceabilityToday }}</strong>
+            <small>Enregistrée(s)</small>
+          </div>
+        </div>
 
-      <div class="kpi-card warning">
-        <span>Nettoyages en retard</span>
-        <strong>{{ stats.lateCleaning }}</strong>
-      </div>
+        <div class="kpi-card">
+          <div class="kpi-icon orange-bg">🧴</div>
+          <div>
+            <span>Nettoyages en retard</span>
+            <strong class="orange-text">{{ stats.lateCleaning }}</strong>
+            <small>À effectuer</small>
+          </div>
+        </div>
 
-      <div class="kpi-card danger">
-        <span>Alertes température</span>
-        <strong>{{ stats.temperatureAlerts }}</strong>
-      </div>
-    </section>
+        <div class="kpi-card">
+          <div class="kpi-icon red-bg">🌡️</div>
+          <div>
+            <span>Alertes température</span>
+            <strong class="red-text">{{ stats.temperatureAlerts }}</strong>
+            <small>Actives</small>
+          </div>
+        </div>
+      </section>
 
-    <section class="alert-panel" *ngIf="stats">
-      <h2>Priorités du jour</h2>
+      <section class="priority-card" *ngIf="stats">
+        <h2>Priorités du jour</h2>
 
-      <div class="alert-row danger" *ngIf="stats.temperatureAlerts > 0">
-        <strong>Température</strong>
-        <span>{{ stats.temperatureAlerts }} alerte(s) à vérifier</span>
-        <button type="button" (click)="go('/fridges')">Voir</button>
-      </div>
+        <div class="priority-ok" *ngIf="stats.temperatureAlerts === 0 && stats.lateCleaning === 0">
+          <div class="ok-icon">✓</div>
+          <div>
+            <strong>Situation normale</strong>
+            <span>Aucune priorité critique détectée.</span>
+          </div>
+          <div class="shield">✅</div>
+        </div>
 
-      <div class="alert-row warning" *ngIf="stats.lateCleaning > 0">
-        <strong>Nettoyage</strong>
-        <span>{{ stats.lateCleaning }} tâche(s) en retard</span>
-        <button type="button" (click)="go('/cleaning-zones')">Voir</button>
-      </div>
+        <div class="priority-alert red-soft" *ngIf="stats.temperatureAlerts > 0">
+          <strong>Alertes température</strong>
+          <span>{{ stats.temperatureAlerts }} alerte(s) active(s)</span>
+          <button type="button" (click)="go('/fridges')">Voir</button>
+        </div>
 
-      <div class="alert-row neutral" *ngIf="stats.temperatureAlerts === 0 && stats.lateCleaning === 0">
-        <strong>Situation normale</strong>
-        <span>Aucune priorité critique détectée.</span>
-      </div>
+        <div class="priority-alert orange-soft" *ngIf="stats.lateCleaning > 0">
+          <strong>Nettoyages en retard</strong>
+          <span>{{ stats.lateCleaning }} tâche(s) à effectuer</span>
+          <button type="button" (click)="go('/cleaning-zones')">Voir</button>
+        </div>
+      </section>
+
     </section>
   `,
   styles: [`
-    .page-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      margin-bottom: 18px;
+    .dashboard-page {
+      display: grid;
+      gap: 20px;
     }
 
-    .page-head h1 {
+    .dashboard-head h1 {
       margin: 0;
-      font-size: 30px;
-      color: #101828;
-    }
-
-    .page-head p {
-      margin: 4px 0 0;
-      color: #667085;
-    }
-
-    .refresh-btn {
-      border: none;
-      background: #0f4c81;
-      color: white;
-      border-radius: 14px;
-      padding: 12px 16px;
+      font-size: 32px;
       font-weight: 900;
-      cursor: pointer;
+      color: #08264a;
+      letter-spacing: -0.5px;
+    }
+
+    .dashboard-head p {
+      margin: 6px 0 0;
+      color: #51627a;
+      font-size: 16px;
+      font-weight: 600;
     }
 
     .quick-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-      gap: 14px;
-      margin-bottom: 18px;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 16px;
     }
 
     .quick-card {
-      border: 1px solid #e4e7ec;
+      min-height: 176px;
+      border: 1px solid #dfe9f5;
       background: #fff;
-      border-radius: 22px;
-      padding: 18px;
+      border-radius: 18px;
+      padding: 24px;
       text-align: left;
       cursor: pointer;
-      box-shadow: 0 10px 24px rgba(16,24,40,.06);
-      transition: .15s ease;
+      box-shadow: 0 10px 26px rgba(15, 76, 129, .08);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+      transition: .18s ease;
     }
 
     .quick-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 16px 32px rgba(16,24,40,.1);
+      transform: translateY(-3px);
+      box-shadow: 0 18px 36px rgba(15, 76, 129, .14);
     }
 
-    .quick-card .icon {
-      font-size: 30px;
-      display: block;
-      margin-bottom: 10px;
+    .quick-card::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 4px;
+      background: #0f6fe5;
     }
+
+    .quick-card.green::after { background: #12b76a; }
+    .quick-card.amber::after { background: #ff8a00; }
+    .quick-card.purple::after { background: #6938ef; }
+    .quick-card.red::after { background: #e11d48; }
 
     .quick-card strong {
       display: block;
-      font-size: 17px;
-      color: #101828;
-      margin-bottom: 4px;
+      color: #08264a;
+      font-size: 18px;
+      font-weight: 900;
+      margin-bottom: 9px;
     }
 
-    .quick-card small {
-      color: #667085;
-      font-weight: 700;
+    .quick-card span {
+      color: #51627a;
+      font-size: 15px;
+      line-height: 1.45;
+      font-weight: 600;
     }
 
-    .quick-card.blue { border-top: 5px solid #0f4c81; }
-    .quick-card.green { border-top: 5px solid #12b76a; }
-    .quick-card.amber { border-top: 5px solid #f79009; }
-    .quick-card.gray { border-top: 5px solid #667085; }
+    .quick-card b {
+      position: absolute;
+      right: 24px;
+      top: 32px;
+      font-size: 32px;
+      color: #385474;
+      font-weight: 400;
+    }
+
+    .icon-circle {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      margin-bottom: 16px;
+    }
+
+    .blue-bg { background: #e8f2ff; }
+    .pink-bg { background: #ffe0f2; }
+    .amber-bg { background: #fff0d8; }
+    .purple-bg { background: #efe6ff; }
+    .red-bg { background: #ffe0e5; }
+    .green-bg { background: #e5f8ed; }
+    .orange-bg { background: #fff1dd; }
 
     .kpi-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-      gap: 14px;
-      margin-bottom: 18px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
     }
 
     .kpi-card {
       background: white;
-      border-radius: 20px;
-      padding: 18px;
-      border: 1px solid #e4e7ec;
-      box-shadow: 0 8px 20px rgba(16,24,40,.05);
+      border: 1px solid #dfe9f5;
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: 0 10px 26px rgba(15, 76, 129, .07);
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      min-height: 128px;
+    }
+
+    .kpi-icon {
+      width: 76px;
+      height: 76px;
+      min-width: 76px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 34px;
     }
 
     .kpi-card span {
-      color: #667085;
-      font-weight: 800;
-      font-size: 13px;
+      color: #51627a;
+      font-size: 16px;
+      font-weight: 700;
+      display: block;
     }
 
     .kpi-card strong {
+      color: #08264a;
+      font-size: 34px;
+      line-height: 1;
+      margin: 10px 0 6px;
       display: block;
-      font-size: 32px;
-      color: #101828;
-      margin-top: 8px;
+      font-weight: 900;
     }
 
-    .kpi-card.warning strong {
-      color: #f79009;
+    .kpi-card small {
+      color: #51627a;
+      font-size: 15px;
+      font-weight: 600;
     }
 
-    .kpi-card.danger strong {
-      color: #d92d20;
-    }
+    .green-text { color: #079455 !important; }
+    .orange-text { color: #ff8a00 !important; }
+    .red-text { color: #d92d20 !important; }
 
-    .alert-panel {
+    .priority-card {
       background: white;
-      border-radius: 22px;
-      padding: 18px;
-      border: 1px solid #e4e7ec;
-      box-shadow: 0 8px 20px rgba(16,24,40,.05);
+      border: 1px solid #dfe9f5;
+      border-radius: 18px;
+      padding: 20px 24px;
+      box-shadow: 0 10px 26px rgba(15, 76, 129, .07);
     }
 
-    .alert-panel h2 {
-      margin: 0 0 12px;
-      font-size: 20px;
-      color: #101828;
+    .priority-card h2 {
+      color: #08264a;
+      margin: 0 0 16px;
+      font-size: 22px;
+      font-weight: 900;
     }
 
-    .alert-row {
-      display: grid;
-      grid-template-columns: 160px 1fr auto;
-      gap: 12px;
+    .priority-ok {
+      background: linear-gradient(90deg, #eafaf1, #f4fff8);
+      border-radius: 16px;
+      min-height: 82px;
+      display: flex;
       align-items: center;
-      padding: 13px;
+      gap: 20px;
+      padding: 18px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .ok-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: #12b76a;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 34px;
+      font-weight: 900;
+      box-shadow: 0 10px 20px rgba(18,183,106,.25);
+    }
+
+    .priority-ok strong {
+      display: block;
+      color: #079455;
+      font-size: 19px;
+      font-weight: 900;
+      margin-bottom: 4px;
+    }
+
+    .priority-ok span {
+      color: #08264a;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .shield {
+      margin-left: auto;
+      font-size: 58px;
+      opacity: .9;
+    }
+
+    .priority-alert {
       border-radius: 14px;
-      margin-top: 8px;
+      padding: 15px;
+      display: grid;
+      grid-template-columns: 220px 1fr auto;
+      align-items: center;
+      gap: 12px;
+      margin-top: 10px;
       font-weight: 800;
     }
 
-    .alert-row button {
+    .priority-alert button {
       border: none;
+      background: white;
       border-radius: 10px;
-      padding: 9px 12px;
+      padding: 9px 13px;
       font-weight: 900;
       cursor: pointer;
-      background: #fff;
     }
 
-    .alert-row.danger {
+    .red-soft {
       background: #fff1f3;
       color: #b42318;
     }
 
-    .alert-row.warning {
-      background: #fffaeb;
-      color: #b54708;
+    .orange-soft {
+      background: #fff7ed;
+      color: #c2410c;
     }
 
-    .alert-row.neutral {
-      background: #ecfdf3;
-      color: #027a48;
-      grid-template-columns: 160px 1fr;
+    @media (max-width: 1200px) {
+      .quick-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .kpi-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
     }
 
     @media (max-width: 700px) {
-      .page-head {
-        display: grid;
+      .dashboard-head h1 {
+        font-size: 26px;
       }
 
-      .alert-row {
+      .quick-grid,
+      .kpi-grid {
         grid-template-columns: 1fr;
+      }
+
+      .quick-card {
+        min-height: 140px;
+      }
+
+      .priority-alert {
+        grid-template-columns: 1fr;
+      }
+
+      .shield {
+        display: none;
       }
     }
   `]
