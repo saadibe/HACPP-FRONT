@@ -1,0 +1,77 @@
+{
+  "configVersion": 1,
+  "timestamp": 1777204163784,
+  "index": "/index.html",
+  "assetGroups": [
+    {
+      "name": "app",
+      "installMode": "prefetch",
+      "updateMode": "prefetch",
+      "cacheQueryOptions": {
+        "ignoreVary": true
+      },
+      "urls": [
+        "/index.html",
+        "/main-A6CXWIRZ.js",
+        "/manifest.webmanifest",
+        "/styles-ZCRXPZTW.css"
+      ],
+      "patterns": []
+    },
+    {
+      "name": "assets",
+      "installMode": "lazy",
+      "updateMode": "prefetch",
+      "cacheQueryOptions": {
+        "ignoreVary": true
+      },
+      "urls": [
+        "/assets/config.js",
+        "/assets/icons/icon-128x128.png",
+        "/assets/icons/icon-144x144.png",
+        "/assets/icons/icon-152x152.png",
+        "/assets/icons/icon-192x192.png",
+        "/assets/icons/icon-384x384.png",
+        "/assets/icons/icon-512x512.png",
+        "/assets/icons/icon-72x72.png",
+        "/assets/icons/icon-96x96.png"
+      ],
+      "patterns": []
+    }
+  ],
+  "dataGroups": [],
+  "hashTable": {
+    "/assets/config.js": "2a1e2721cc293ceaad6c61730a89dd3312466114",
+    "/assets/icons/icon-128x128.png": "b567680cac4c0b0120fc4cc337916356c9d3cba2",
+    "/assets/icons/icon-144x144.png": "09523766e0c1da1f573718f7c401cab227764fbd",
+    "/assets/icons/icon-152x152.png": "6c588118d2b592340570e0d3010bfb63bd6f1987",
+    "/assets/icons/icon-192x192.png": "dd5481ae909857fded2143cffe929093176bfd24",
+    "/assets/icons/icon-384x384.png": "cdb0c20d645b4c02d5a4373cb819b62354c6da23",
+    "/assets/icons/icon-512x512.png": "aba5ce27ce107e3f3419c8557d18ef7478602167",
+    "/assets/icons/icon-72x72.png": "ac65a52991291a19bdbc0ba57aa4df352f770cda",
+    "/assets/icons/icon-96x96.png": "9418047c32958bae937e165162d7dd136f3ccabf",
+    "/index.html": "86c52b9bf3c4f999afd4f3988d39a0b605d92511",
+    "/main-A6CXWIRZ.js": "bc43b7681ee763d4e8fefc5ab82d522802881625",
+    "/manifest.webmanifest": "83df0311dd3d84e011170200e746ca8a3d9ba3e5",
+    "/styles-ZCRXPZTW.css": "588a24620ca579d52f023779d8b8bae4961536c4"
+  },
+  "navigationUrls": [
+    {
+      "positive": true,
+      "regex": "^\\/.*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*\\.[^/]*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*__[^/]*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*__[^/]*\\/.*$"
+    }
+  ],
+  "navigationRequestStrategy": "performance"
+}
