@@ -1,0 +1,10 @@
+Dans layout.component.ts, ajoute ce lien dans la bottom-nav ou dans le menu profil :
+
+<a *ngIf="role === 'SUPER_ADMIN'" routerLink="/clients" routerLinkActive="active">
+  <span class="nav-icon">🏢</span>
+  <span>Clients</span>
+</a>
+
+Et ajoute dans la classe TypeScript :
+
+role = localStorage.getItem('role') || '';

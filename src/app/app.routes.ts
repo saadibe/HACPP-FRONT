@@ -8,7 +8,7 @@ import { TraceabilityComponent } from './features/traceability/traceability.comp
 import { HistoryComponent } from './features/history/history.component';
 import { UsersComponent } from './features/users/users.component';
 import { HygieneReportComponent } from './features/hygiene-report/hygiene-report.component';
-
+import { ClientsComponent } from './features/clients/clients.component';
 import { authGuard } from './core/auth.guard';
 import { loginGuard } from './core/login.guard';
 import { rootRedirectGuard } from './core/root-redirect.guard';
@@ -29,7 +29,8 @@ export const routes: Routes = [
       { path: 'traceability', component: TraceabilityComponent },
       { path: 'history', component: HistoryComponent },
       { path: 'users', component: UsersComponent },
-      { path: 'hygiene-report', component: HygieneReportComponent }
+      { path: 'hygiene-report', component: HygieneReportComponent },
+      { path: 'clients', component: ClientsComponent }
     ]
   },
 

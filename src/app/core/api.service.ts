@@ -8,7 +8,21 @@ declare global {
 const API_BASE = window.__APP_CONFIG__?.apiBaseUrl || 'http://localhost:8080/api';
 
 export interface LoginRequest { username: string; password: string; }
-export interface LoginResponse { token: string; username: string; role: string; restaurantId: number; }
+export interface LoginResponse { token: string; username: string; role: string; restaurantId: number; schemaName?: string; }
+
+export interface ClientDto {
+  id?: number;
+  name: string;
+  schemaName: string;
+  active: boolean;
+}
+
+export interface CreateClientRequest {
+  restaurantName: string;
+  schemaName?: string;
+  adminUsername: string;
+  adminPassword: string;
+}
 export interface DashboardResponse {
   expired: number; expiringSoon: number; fridges: number; checks: number; invoices: number; users: number;
   traceabilityToday: number; traceabilityMonth: number; traceabilityYear: number; fridgeProofs: number;
@@ -45,6 +59,14 @@ export class ApiService {
 
   login(payload: LoginRequest): Observable<LoginResponse> { return this.http.post<LoginResponse>(`${this.baseUrl}/auth/login`, payload); }
   getDashboard(): Observable<DashboardResponse> { return this.http.get<DashboardResponse>(`${this.baseUrl}/dashboard`); }
+
+  getClients(): Observable<ClientDto[]> {
+    return this.http.get<ClientDto[]>(`${this.baseUrl}/clients`);
+  }
+
+  createClient(payload: CreateClientRequest): Observable<ClientDto> {
+    return this.http.post<ClientDto>(`${this.baseUrl}/clients`, payload);
+  }
 
   getFridges(): Observable<Fridge[]> { return this.http.get<Fridge[]>(`${this.baseUrl}/fridges`); }
   createFridge(payload: Fridge): Observable<Fridge> { return this.http.post<Fridge>(`${this.baseUrl}/fridges`, payload); }
