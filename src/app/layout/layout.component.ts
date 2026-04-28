@@ -1,7 +1,7 @@
 import { Component, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-
+import { AuthService } from '../core/auth.service';
 @Component({
   selector: 'app-layout',
   standalone: true,
@@ -43,9 +43,7 @@ import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/rou
             </div>
 
             <button type="button" (click)="go('/users')">👤 Mon compte</button>
-            <button type="button" (click)="go('/history')">🕘 Historique</button>
-            <button type="button" (click)="go('/hygiene-report')">📄 Rapport hygiène</button>
-
+            <button type="button"  *ngIf="isSuperAdmin()" (click)="go('/clients')"> 🏢 Clients</button>
             <div class="separator"></div>
 
             <button type="button" class="logout" (click)="logout()">🚪 Déconnexion</button>
@@ -473,8 +471,10 @@ import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/rou
 export class LayoutComponent {
   showUserMenu = false;
 
-  constructor(private router: Router) {}
-
+  constructor(private router: Router,private auth: AuthService) {}
+isSuperAdmin(): boolean {
+  return this.auth.isSuperAdmin();
+}
   get username(): string {
     return localStorage.getItem('username') || 'Utilisateur';
   }

@@ -15,8 +15,8 @@ import { ApiService, DashboardResponse } from '../../core/api.service';
       </div>
 
       <section class="quick-grid">
-        <button class="quick-card blue" type="button" (click)="go('/fridges')">
-          <div class="icon-circle blue-bg">🌡️</div>
+        <button class="quick-card card-fridge" type="button" (click)="go('/fridges')">
+          <div class="icon-circle">🌡️</div>
           <div>
             <strong>Relevé frigo</strong>
             <span>Température + photo preuve</span>
@@ -24,8 +24,8 @@ import { ApiService, DashboardResponse } from '../../core/api.service';
           <b>›</b>
         </button>
 
-        <button class="quick-card green" type="button" (click)="go('/cleaning-zones')">
-          <div class="icon-circle pink-bg">🧽</div>
+        <button class="quick-card card-cleaning" type="button" (click)="go('/cleaning-zones')">
+          <div class="icon-circle">🧽</div>
           <div>
             <strong>Preuve nettoyage</strong>
             <span>Photo directe tablette</span>
@@ -33,8 +33,8 @@ import { ApiService, DashboardResponse } from '../../core/api.service';
           <b>›</b>
         </button>
 
-        <button class="quick-card amber" type="button" (click)="go('/traceability')">
-          <div class="icon-circle amber-bg">📋</div>
+        <button class="quick-card card-traceability" type="button" (click)="go('/traceability')">
+          <div class="icon-circle">📋</div>
           <div>
             <strong>Traçabilité</strong>
             <span>Factures, lots, DLC</span>
@@ -42,8 +42,8 @@ import { ApiService, DashboardResponse } from '../../core/api.service';
           <b>›</b>
         </button>
 
-        <button class="quick-card purple" type="button" (click)="go('/history')">
-          <div class="icon-circle purple-bg">🕘</div>
+        <button class="quick-card card-history" type="button" (click)="go('/history')">
+          <div class="icon-circle">🕘</div>
           <div>
             <strong>Historique</strong>
             <span>Preuves par date et type</span>
@@ -51,8 +51,8 @@ import { ApiService, DashboardResponse } from '../../core/api.service';
           <b>›</b>
         </button>
 
-        <button class="quick-card red" type="button" (click)="go('/fridges')">
-          <div class="icon-circle red-bg">🔔</div>
+        <button class="quick-card card-alert" type="button" (click)="go('/fridges')">
+          <div class="icon-circle">🔔</div>
           <div>
             <strong>Alertes température</strong>
             <span>Surveillance des écarts</span>
@@ -155,83 +155,92 @@ import { ApiService, DashboardResponse } from '../../core/api.service';
 
     .quick-card {
       min-height: 176px;
-      border: 1px solid #dfe9f5;
-      background: #fff;
-      border-radius: 18px;
+      border: none;
+      border-radius: 20px;
       padding: 24px;
       text-align: left;
       cursor: pointer;
-      box-shadow: 0 10px 26px rgba(15, 76, 129, .08);
       position: relative;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       overflow: hidden;
       transition: .18s ease;
+      color: #fff;
+      box-shadow: 0 14px 32px rgba(15, 23, 42, .18);
+    }
+
+    .quick-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at top left, rgba(255,255,255,.28), transparent 38%);
+      pointer-events: none;
     }
 
     .quick-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 18px 36px rgba(15, 76, 129, .14);
+      transform: translateY(-4px);
+      box-shadow: 0 20px 42px rgba(15, 23, 42, .25);
     }
 
-    .quick-card::after {
-      content: '';
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      height: 4px;
-      background: #0f6fe5;
+    .card-fridge {
+      background: linear-gradient(135deg, #0f3b82, #1d7af0);
     }
 
-    .quick-card.green::after { background: #12b76a; }
-    .quick-card.amber::after { background: #ff8a00; }
-    .quick-card.purple::after { background: #6938ef; }
-    .quick-card.red::after { background: #e11d48; }
+    .card-cleaning {
+      background: linear-gradient(135deg, #0f6b3d, #18b86f);
+    }
+
+    .card-traceability {
+      background: linear-gradient(135deg, #b45309, #f97316);
+    }
+
+    .card-history {
+      background: linear-gradient(135deg, #4c1d95, #7c3aed);
+    }
+
+    .card-alert {
+      background: linear-gradient(135deg, #991b1b, #e11d48);
+    }
 
     .quick-card strong {
       display: block;
-      color: #08264a;
-      font-size: 18px;
-      font-weight: 900;
+      color: #ffffff;
+      font-size: 19px;
+      font-weight: 950;
       margin-bottom: 9px;
+      text-shadow: 0 1px 2px rgba(0,0,0,.22);
     }
 
     .quick-card span {
-      color: #51627a;
+      color: rgba(255,255,255,.88);
       font-size: 15px;
       line-height: 1.45;
-      font-weight: 600;
+      font-weight: 700;
     }
 
     .quick-card b {
       position: absolute;
       right: 24px;
-      top: 32px;
-      font-size: 32px;
-      color: #385474;
-      font-weight: 400;
+      top: 28px;
+      font-size: 34px;
+      color: rgba(255,255,255,.75);
+      font-weight: 300;
     }
 
     .icon-circle {
       width: 72px;
       height: 72px;
       border-radius: 50%;
+      background: rgba(255,255,255,.92);
+      color: #08264a;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 32px;
       margin-bottom: 16px;
+      box-shadow: 0 12px 24px rgba(0,0,0,.16);
     }
-
-    .blue-bg { background: #e8f2ff; }
-    .pink-bg { background: #ffe0f2; }
-    .amber-bg { background: #fff0d8; }
-    .purple-bg { background: #efe6ff; }
-    .red-bg { background: #ffe0e5; }
-    .green-bg { background: #e5f8ed; }
-    .orange-bg { background: #fff1dd; }
 
     .kpi-grid {
       display: grid;
@@ -261,6 +270,11 @@ import { ApiService, DashboardResponse } from '../../core/api.service';
       justify-content: center;
       font-size: 34px;
     }
+
+    .blue-bg { background: #e8f2ff; }
+    .green-bg { background: #e5f8ed; }
+    .orange-bg { background: #fff1dd; }
+    .red-bg { background: #ffe0e5; }
 
     .kpi-card span {
       color: #51627a;
