@@ -139,17 +139,18 @@ updateClientEmail(id: number, email: string) {
     return qs ? `${url}?${qs}` : url;
   }
 
-  downloadHygieneReport(filters?: {day?: string; month?: string; year?: number}) {
-    let params = new HttpParams();
-    if (filters?.day) params = params.set('day', filters.day);
-    if (filters?.month) params = params.set('month', filters.month);
-    if (filters?.year) params = params.set('year', String(filters.year));
+sendHygieneReportByEmail(filters?: { day?: string; month?: string; year?: number }) {
+  let params: any = {};
 
-    return this.http.get(`${this.baseUrl}/reports/hygiene.pdf`, {
-      params,
-      responseType: 'blob'
-    });
-  }
+  if (filters?.day) params.day = filters.day;
+  if (filters?.month) params.month = filters.month;
+  if (filters?.year) params.year = filters.year;
+
+  return this.http.get<{ message: string }>(
+    `${this.baseUrl}/reports/hygiene.pdf`,
+    { params }
+  );
+}
 
   reportUrl(): string { return `${this.baseUrl}/batches/report.pdf`; }
 }

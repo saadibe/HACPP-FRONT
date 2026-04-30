@@ -23,10 +23,6 @@ import { ApiService } from '../../core/api.service';
         </div>
 
         <div class="modal-actions">
-          <button type="button" class="btn-primary-pro action-lg" (click)="exportPdf()">
-            📄 Export PDF hygiène
-          </button>
-
           <button type="button" class="btn-primary-pro action-lg" (click)="sendByEmail()" [disabled]="sendingEmail">
             {{ sendingEmail ? 'Envoi en cours...' : '📧 Envoyer par email' }}
           </button>
@@ -64,22 +60,6 @@ export class HygieneReportComponent {
     month: '',
     year: 0
   });
-
-  exportPdf(): void {
-    const filters = this.buildFilters();
-
-    this.api.downloadHygieneReport(filters).subscribe(blob => {
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-
-      a.href = url;
-      a.download = 'hygiene-report.pdf';
-      a.click();
-
-      window.URL.revokeObjectURL(url);
-    });
-  }
-
   sendByEmail(): void {
     const filters = this.buildFilters();
 
