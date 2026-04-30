@@ -11,10 +11,11 @@ export interface LoginRequest { username: string; password: string; }
 export interface LoginResponse { token: string; username: string; role: string; restaurantId: number; schemaName?: string; }
 
 export interface ClientDto {
-  id?: number;
-  name: string;
+  id: number; // ← PAS optional
+  restaurantName: string;
   schemaName: string;
   active: boolean;
+  email?: string;
 }
 
 export interface CreateClientRequest {
@@ -22,6 +23,7 @@ export interface CreateClientRequest {
   schemaName?: string;
   adminUsername: string;
   adminPassword: string;
+  email?: string;
 }
 export interface DashboardResponse {
   expired: number; expiringSoon: number; fridges: number; checks: number; invoices: number; users: number;
@@ -67,6 +69,9 @@ export class ApiService {
   createClient(payload: CreateClientRequest): Observable<ClientDto> {
     return this.http.post<ClientDto>(`${this.baseUrl}/clients`, payload);
   }
+updateClientEmail(id: number, email: string) {
+  return this.http.patch<ClientDto>(`${this.baseUrl}/clients/${id}/email`, { email });
+}
 
   getFridges(): Observable<Fridge[]> { return this.http.get<Fridge[]>(`${this.baseUrl}/fridges`); }
   createFridge(payload: Fridge): Observable<Fridge> { return this.http.post<Fridge>(`${this.baseUrl}/fridges`, payload); }

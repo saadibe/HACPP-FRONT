@@ -21,25 +21,35 @@ import { ApiService, ClientDto } from '../../core/api.service';
         <section class="card">
           <h2>Nouveau client</h2>
 
-          <form [formGroup]="form" (ngSubmit)="create()" class="form">
+          <form [formGroup]="form" (ngSubmit)="create()" class="form" autocomplete="off">
             <label>
               Nom restaurant
-              <input formControlName="restaurantName" placeholder="Ex: La Perla Bezons">
+              <input formControlName="restaurantName" placeholder="Ex: La Perla Bezons" autocomplete="off">
+            </label>
+
+            <label>
+              Email client
+              <input
+                type="text"
+                inputmode="email"
+                formControlName="email"
+                placeholder="contact@restaurant.fr"
+                autocomplete="off">
             </label>
 
             <label>
               Schéma PostgreSQL
-              <input formControlName="schemaName" placeholder="Ex: la_perla_bezons">
+              <input formControlName="schemaName" placeholder="Ex: la_perla_bezons" autocomplete="off">
             </label>
 
             <label>
               Admin username
-              <input formControlName="adminUsername" placeholder="admin@restaurant.fr">
+              <input formControlName="adminUsername" placeholder="admin@restaurant.fr" autocomplete="off">
             </label>
 
             <label>
               Mot de passe
-              <input type="password" formControlName="adminPassword" placeholder="Mot de passe admin">
+              <input type="password" formControlName="adminPassword" placeholder="Mot de passe admin" autocomplete="new-password">
             </label>
 
             <button type="submit" [disabled]="form.invalid || loading">
@@ -59,6 +69,7 @@ import { ApiService, ClientDto } from '../../core/api.service';
               <thead>
                 <tr>
                   <th>Restaurant</th>
+                  <th>Email</th>
                   <th>Schéma</th>
                   <th>Statut</th>
                 </tr>
@@ -67,7 +78,24 @@ import { ApiService, ClientDto } from '../../core/api.service';
               <tbody>
                 <tr *ngFor="let c of clients">
                   <td>{{ c.restaurantName }}</td>
+
+                  <td>
+                    <input
+                      class="email-edit"
+                      type="text"
+                      inputmode="email"
+                      [value]="c.email || ''"
+                      placeholder="email client"
+                      autocomplete="off"
+                      autocorrect="off"
+                      autocapitalize="off"
+                      spellcheck="false"
+                      (change)="confirmUpdateEmail(c, $any($event.target))"
+                    />
+                  </td>
+
                   <td><code>{{ c.schemaName }}</code></td>
+
                   <td>
                     <span class="status" [class.off]="!c.active">
                       {{ c.active ? 'Actif' : 'Inactif' }}
@@ -76,7 +104,7 @@ import { ApiService, ClientDto } from '../../core/api.service';
                 </tr>
 
                 <tr *ngIf="clients.length === 0">
-                  <td colspan="3" class="empty">Aucun client pour le moment.</td>
+                  <td colspan="4" class="empty">Aucun client pour le moment.</td>
                 </tr>
               </tbody>
             </table>
@@ -168,6 +196,16 @@ import { ApiService, ClientDto } from '../../core/api.service';
       border-color: #2563eb;
       background: #ffffff;
       box-shadow: 0 0 0 4px rgba(37, 99, 235, .12);
+    }
+
+    .email-edit {
+      height: 38px;
+      min-width: 230px;
+      border-radius: 10px;
+      border: 1px solid #dbe3ee;
+      padding: 0 10px;
+      background: #f8fafc;
+      font-weight: 700;
     }
 
     button {
@@ -271,6 +309,7 @@ export class ClientsComponent implements OnInit {
 
   form = this.fb.group({
     restaurantName: ['', Validators.required],
+    email: ['', [Validators.email]],
     schemaName: [''],
     adminUsername: ['', Validators.required],
     adminPassword: ['', Validators.required],
@@ -304,6 +343,56 @@ export class ClientsComponent implements OnInit {
       error: (err: any) => {
         this.error = err?.error?.message || 'Erreur pendant la création du client.';
         this.loading = false;
+      }
+    });
+  }
+
+  confirmUpdateEmail(client: ClientDto, input: HTMLInputElement): void {
+    if (!client.id) {
+      this.error = 'ID client invalide.';
+      return;
+    }
+
+    const newEmail = input.value.trim();
+    const oldEmail = client.email || '';
+
+    if (newEmail === oldEmail) {
+      return;
+    }
+
+    const confirmed = confirm(
+      `Confirmer la modification de l'email du client "${client.restaurantName}" ?`
+    );
+
+    if (!confirmed) {
+      input.value = oldEmail;
+      return;
+    }
+
+    this.updateEmail(client, newEmail, input, oldEmail);
+  }
+
+  updateEmail(client: ClientDto, email: string, input: HTMLInputElement, oldEmail: string): void {
+    this.success = '';
+    this.error = '';
+
+    this.api.updateClientEmail(client.id!, email).subscribe({
+      next: (updated: ClientDto) => {
+        this.clients = this.clients.map(c =>
+          c.id === updated.id ? updated : c
+        );
+
+        input.value = updated.email || '';
+        this.success = 'Email client mis à jour.';
+        alert('Email client mis à jour avec succès.');
+      },
+      error: (err: any) => {
+        console.error('Erreur update email:', err);
+        input.value = oldEmail;
+        this.error =
+          err?.error?.message ||
+          err?.error ||
+          `Erreur HTTP ${err?.status || ''} pendant la modification de l’email.`;
       }
     });
   }
