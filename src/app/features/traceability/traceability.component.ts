@@ -2,7 +2,14 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { ApiService, Invoice, InvoiceOcrResponse, InvoiceStats, TraceabilityProof, ProofPhoto } from '../../core/api.service';
+import {
+  ApiService,
+  Invoice,
+  InvoiceOcrResponse,
+  InvoiceStats,
+  TraceabilityProof,
+  ProofPhoto
+} from '../../core/api.service';
 
 @Component({
   standalone: true,
@@ -130,7 +137,9 @@ import { ApiService, Invoice, InvoiceOcrResponse, InvoiceStats, TraceabilityProo
 
           <div class="modal-actions">
             <button type="button" class="btn-secondary-pro" (click)="closeModal()">Annuler</button>
-            <button type="submit" class="btn-primary-pro action-lg">{{ editingId ? 'Enregistrer les modifications' : 'Enregistrer' }}</button>
+            <button type="submit" class="btn-primary-pro action-lg">
+              {{ editingId ? 'Enregistrer les modifications' : 'Enregistrer' }}
+            </button>
           </div>
         </form>
       </div>
@@ -216,7 +225,7 @@ export class TraceabilityComponent implements OnInit {
   form = this.fb.nonNullable.group({
     supplierName: '',
     invoiceNumber: '',
-    invoiceDate: '',
+    invoiceDate: this.today(),
     productCategory: '',
     batchNumber: '',
     supplierLot: '',
@@ -234,6 +243,7 @@ export class TraceabilityComponent implements OnInit {
 
   ngOnInit(): void {
     this.api.getInvoiceStats().subscribe(s => this.stats = s);
+
     this.route.queryParamMap.subscribe(params => {
       const scope = params.get('scope');
       if (scope === 'today') this.applyToday();
@@ -246,27 +256,65 @@ export class TraceabilityComponent implements OnInit {
   search(): void {
     const v = this.filterForm.getRawValue();
     const filters: any = {};
+
     if (v.day) filters.day = v.day;
     else if (v.month) filters.month = v.month;
     else if (v.year && v.year > 0) filters.year = v.year;
+
     this.api.getInvoices(filters).subscribe(data => this.invoices = data);
   }
 
-  reset(): void { this.filterForm.reset({ day: '', month: '', year: 0 }); this.search(); }
-  applyToday(): void { this.filterForm.patchValue({ day: new Date().toISOString().slice(0, 10), month: '', year: 0 }); this.search(); }
-  applyMonth(): void { this.filterForm.patchValue({ day: '', month: new Date().toISOString().slice(0, 7), year: 0 }); this.search(); }
-  applyYear(): void { this.filterForm.patchValue({ day: '', month: '', year: new Date().getFullYear() }); this.search(); }
+  reset(): void {
+    this.filterForm.reset({ day: '', month: '', year: 0 });
+    this.search();
+  }
+
+  applyToday(): void {
+    this.filterForm.patchValue({
+      day: this.today(),
+      month: '',
+      year: 0
+    });
+    this.search();
+  }
+
+  applyMonth(): void {
+    this.filterForm.patchValue({
+      day: '',
+      month: this.today().slice(0, 7),
+      year: 0
+    });
+    this.search();
+  }
+
+  applyYear(): void {
+    this.filterForm.patchValue({
+      day: '',
+      month: '',
+      year: new Date().getFullYear()
+    });
+    this.search();
+  }
 
   toggleProofs(invoice: Invoice): void {
-    if (this.selectedInvoiceId === invoice.id) { this.selectedInvoiceId = undefined; return; }
+    if (this.selectedInvoiceId === invoice.id) {
+      this.selectedInvoiceId = undefined;
+      return;
+    }
+
     this.selectedInvoiceId = invoice.id;
-    this.api.getTraceabilityProofs(invoice.id!).subscribe(v => this.invoiceProofs[invoice.id!] = v);
+    this.api.getTraceabilityProofs(invoice.id!).subscribe(v => {
+      this.invoiceProofs[invoice.id!] = v;
+    });
   }
 
   openProofModal(invoice: Invoice): void {
     this.currentInvoice = invoice;
     this.proofFiles = [];
-    this.proofCreateForm.reset({ createdBy: '', comment: '' });
+    this.proofCreateForm.reset({
+      createdBy: '',
+      comment: ''
+    });
     this.showProofCreateModal = true;
   }
 
@@ -279,14 +327,18 @@ export class TraceabilityComponent implements OnInit {
   onProofFilesPicked(event: Event): void {
     const input = event.target as HTMLInputElement;
     const files = Array.from(input.files || []);
+
     this.proofFiles = [...this.proofFiles, ...files];
     input.value = '';
   }
 
-  onDragOver(event: DragEvent): void { event.preventDefault(); }
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+  }
 
   onProofFilesDropped(event: DragEvent): void {
     event.preventDefault();
+
     const files = Array.from(event.dataTransfer?.files || []);
     this.proofFiles = [...this.proofFiles, ...files];
   }
@@ -297,22 +349,32 @@ export class TraceabilityComponent implements OnInit {
 
   submitTraceabilityProof(): void {
     if (!this.currentInvoice?.id || !this.proofFiles.length) return;
+
     const v = this.proofCreateForm.getRawValue();
     const fd = new FormData();
+
     fd.append('createdBy', v.createdBy);
     fd.append('comment', v.comment);
+
     this.proofFiles.forEach(f => fd.append('photos', f));
+
     this.api.createTraceabilityProof(this.currentInvoice.id, fd).subscribe(() => {
       const id = this.currentInvoice!.id!;
+
       this.closeProofModal();
       this.selectedInvoiceId = id;
-      this.api.getTraceabilityProofs(id).subscribe(r => this.invoiceProofs[id] = r);
+
+      this.api.getTraceabilityProofs(id).subscribe(r => {
+        this.invoiceProofs[id] = r;
+      });
     });
   }
 
   deleteTraceabilityProof(invoiceId: number, proofId: number): void {
     this.api.deleteTraceabilityProof(proofId).subscribe(() => {
-      this.api.getTraceabilityProofs(invoiceId).subscribe(r => this.invoiceProofs[invoiceId] = r);
+      this.api.getTraceabilityProofs(invoiceId).subscribe(r => {
+        this.invoiceProofs[invoiceId] = r;
+      });
     });
   }
 
@@ -322,7 +384,11 @@ export class TraceabilityComponent implements OnInit {
     });
   }
 
-  openCreateModal(): void { this.editingId = undefined; this.showModal = true; this.resetModalState(); }
+  openCreateModal(): void {
+    this.editingId = undefined;
+    this.showModal = true;
+    this.resetModalState();
+  }
 
   openEditModal(invoice: Invoice): void {
     this.editingId = invoice.id;
@@ -331,10 +397,13 @@ export class TraceabilityComponent implements OnInit {
     this.ocrLoading = false;
     this.ocrDone = false;
     this.ocrText = invoice.ocrRawText || '';
+    this.confidence = 0;
+    this.confidenceLabel = '';
+
     this.form.patchValue({
       supplierName: invoice.supplierName || '',
       invoiceNumber: invoice.invoiceNumber || '',
-      invoiceDate: invoice.invoiceDate || '',
+      invoiceDate: invoice.invoiceDate || this.today(),
       productCategory: invoice.productCategory || '',
       batchNumber: invoice.batchNumber || '',
       supplierLot: invoice.supplierLot || '',
@@ -346,7 +415,11 @@ export class TraceabilityComponent implements OnInit {
     });
   }
 
-  closeModal(): void { this.showModal = false; this.editingId = undefined; this.resetModalState(); }
+  closeModal(): void {
+    this.showModal = false;
+    this.editingId = undefined;
+    this.resetModalState();
+  }
 
   resetModalState(): void {
     this.file = undefined;
@@ -355,22 +428,40 @@ export class TraceabilityComponent implements OnInit {
     this.ocrText = '';
     this.confidence = 0;
     this.confidenceLabel = '';
+
     this.form.reset({
-      supplierName: '', invoiceNumber: '', invoiceDate: '', productCategory: '', batchNumber: '',
-      supplierLot: '', dlcDate: '', deliveryReference: '', storageLocation: 'Réserve',
-      traceabilityStatus: 'MANUAL_REVIEW', note: ''
+      supplierName: '',
+      invoiceNumber: '',
+      invoiceDate: this.today(),
+      productCategory: '',
+      batchNumber: '',
+      supplierLot: '',
+      dlcDate: '',
+      deliveryReference: '',
+      storageLocation: 'Réserve',
+      traceabilityStatus: 'MANUAL_REVIEW',
+      note: ''
+    });
+
+    setTimeout(() => {
+      this.form.controls.invoiceDate.setValue(this.today());
     });
   }
 
   onTraceFilePicked(event: Event): void {
     const input = event.target as HTMLInputElement;
     const selected = input.files?.[0];
+
     if (!selected) return;
+
     this.file = selected;
+
     const fd = new FormData();
     fd.append('file', selected);
+
     this.ocrLoading = true;
     this.ocrDone = false;
+
     this.api.ocrInvoice(fd).subscribe({
       next: (ocr: InvoiceOcrResponse) => {
         this.ocrLoading = false;
@@ -378,10 +469,11 @@ export class TraceabilityComponent implements OnInit {
         this.ocrText = ocr.rawText || '';
         this.confidence = ocr.confidence || 0;
         this.confidenceLabel = ocr.confidenceLabel || '';
+
         this.form.patchValue({
           supplierName: ocr.supplierName || '',
           invoiceNumber: ocr.invoiceNumber || '',
-          invoiceDate: ocr.invoiceDate || '',
+          invoiceDate: ocr.invoiceDate || this.today(),
           productCategory: ocr.productCategory || '',
           batchNumber: ocr.batchNumber || '',
           supplierLot: ocr.supplierLot || '',
@@ -392,16 +484,20 @@ export class TraceabilityComponent implements OnInit {
           note: ocr.note || ''
         });
       },
-      error: () => { this.ocrLoading = false; }
+      error: () => {
+        this.ocrLoading = false;
+      }
     });
   }
 
   submit(): void {
     const value = this.form.getRawValue();
     const fd = new FormData();
+
     fd.append('supplierName', value.supplierName);
+    fd.append('invoiceDate', value.invoiceDate || this.today());
+
     if (value.invoiceNumber) fd.append('invoiceNumber', value.invoiceNumber);
-    if (value.invoiceDate) fd.append('invoiceDate', value.invoiceDate);
     if (value.productCategory) fd.append('productCategory', value.productCategory);
     if (value.batchNumber) fd.append('batchNumber', value.batchNumber);
     if (value.supplierLot) fd.append('supplierLot', value.supplierLot);
@@ -422,7 +518,9 @@ export class TraceabilityComponent implements OnInit {
     }
 
     if (!this.file) return;
+
     fd.append('file', this.file);
+
     this.api.createInvoice(fd).subscribe(() => {
       this.closeModal();
       this.api.getInvoiceStats().subscribe(s => this.stats = s);
@@ -435,5 +533,13 @@ export class TraceabilityComponent implements OnInit {
       this.api.getInvoiceStats().subscribe(s => this.stats = s);
       this.search();
     });
+  }
+
+  private today(): string {
+    const d = new Date();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+
+    return `${d.getFullYear()}-${month}-${day}`;
   }
 }
