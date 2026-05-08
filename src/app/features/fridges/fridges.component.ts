@@ -70,7 +70,13 @@ import { ApiService, Fridge, FridgeProof, ProofPhoto } from '../../core/api.serv
                 (dragover)="$event.preventDefault()"
                 (drop)="onFridgeDrop(proof, i)"
               >
-                <img class="preview mini-preview" [src]="api.publicUrl(photo.url)" alt="">
+                <img
+                  class="preview mini-preview zoomable-img"
+                  [src]="api.publicUrl(photo.url)"
+                  alt="Preuve frigo"
+                  (click)="openImage(api.publicUrl(photo.url))"
+                >
+
                 <div class="photo-actions">
                   <button type="button" class="tiny-btn" *ngIf="i > 0" (click)="movePhotoLeft(proof, i)">
                     ←
@@ -213,7 +219,70 @@ import { ApiService, Fridge, FridgeProof, ProofPhoto } from '../../core/api.serv
         </form>
       </div>
     </div>
-  `
+
+    <div class="image-modal" *ngIf="selectedImage" (click)="closeImage()">
+      <div class="image-box" (click)="$event.stopPropagation()">
+        <button type="button" class="close-img-btn" (click)="closeImage()">×</button>
+        <img [src]="selectedImage" alt="Preuve frigo">
+      </div>
+    </div>
+  `,
+  styles: [`
+    .zoomable-img {
+      cursor: zoom-in;
+      transition: transform .18s ease, box-shadow .18s ease;
+    }
+
+    .zoomable-img:hover {
+      transform: scale(1.01);
+      box-shadow: 0 10px 25px rgba(15, 23, 42, .18);
+    }
+
+    .image-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, .76);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      padding: 20px;
+    }
+
+    .image-box {
+      position: relative;
+      background: white;
+      border-radius: 24px;
+      padding: 16px;
+      max-width: 92vw;
+      max-height: 92vh;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, .35);
+    }
+
+    .image-box img {
+      max-width: 86vw;
+      max-height: 82vh;
+      border-radius: 16px;
+      display: block;
+      object-fit: contain;
+    }
+
+    .close-img-btn {
+      position: absolute;
+      top: -14px;
+      right: -14px;
+      width: 38px;
+      height: 38px;
+      border: none;
+      border-radius: 50%;
+      background: #0f172a;
+      color: white;
+      font-size: 24px;
+      line-height: 1;
+      cursor: pointer;
+      box-shadow: 0 10px 22px rgba(0, 0, 0, .25);
+    }
+  `]
 })
 export class FridgesComponent implements OnInit {
   private apiService = inject(ApiService);
@@ -229,6 +298,7 @@ export class FridgesComponent implements OnInit {
   showProofModal = false;
   editingId?: number;
   dragIndex = -1;
+  selectedImage = '';
 
   form = this.fb.nonNullable.group({
     name: '',
@@ -246,6 +316,14 @@ export class FridgesComponent implements OnInit {
 
   ngOnInit(): void {
     this.load();
+  }
+
+  openImage(url: string): void {
+    this.selectedImage = url;
+  }
+
+  closeImage(): void {
+    this.selectedImage = '';
   }
 
   load(): void {
