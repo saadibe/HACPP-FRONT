@@ -99,8 +99,8 @@ import {
           <button class="icon-btn" type="button" (click)="closeModal()">×</button>
         </div>
 
-        <div class="ocr-banner" *ngIf="ocrLoading">Lecture OCR en cours...</div>
-        <div class="ocr-banner success" *ngIf="ocrDone">Préremplissage OCR terminé</div>
+        <div class="ocr-banner" *ngIf="ocrLoading">Lecture IA en cours...</div>
+        <div class="ocr-banner success" *ngIf="ocrDone">Préremplissage IA terminé</div>
         <div class="ocr-banner" *ngIf="confidenceLabel">{{ confidenceLabel }} - score {{ confidence }}/100</div>
 
         <form [formGroup]="form" (ngSubmit)="submit()">
@@ -108,17 +108,8 @@ import {
             <input formControlName="supplierName" placeholder="Fournisseur">
             <input formControlName="invoiceNumber" placeholder="Numéro">
             <input type="date" formControlName="invoiceDate">
-            <input formControlName="productCategory" placeholder="Catégorie produit">
-            <input formControlName="batchNumber" placeholder="Batch fabrication">
             <input formControlName="supplierLot" placeholder="Lot fournisseur">
             <input type="date" formControlName="dlcDate">
-            <input formControlName="deliveryReference" placeholder="Référence livraison">
-            <input formControlName="storageLocation" placeholder="Emplacement stockage">
-            <select formControlName="traceabilityStatus">
-              <option value="MANUAL_REVIEW">À vérifier</option>
-              <option value="OCR_DETECTED">OCR détecté</option>
-              <option value="VALIDATED">Validé</option>
-            </select>
             <textarea formControlName="note" placeholder="Note"></textarea>
           </div>
 
