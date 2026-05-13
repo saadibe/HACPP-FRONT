@@ -1,17 +1,25 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { ApiService, Fridge, FridgeProof, ProofPhoto } from '../../core/api.service';
+import { RouterLink } from '@angular/router';
+
+import {
+  ApiService,
+  Fridge,
+  FridgeProof,
+  ProofPhoto
+} from '../../core/api.service';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   template: `
     <section class="page-top">
       <div>
         <h1>Frigos</h1>
         <p>Relevés du jour uniquement. L’historique complet est disponible dans la page Historique.</p>
       </div>
+
       <button type="button" class="btn-primary-pro action-lg" (click)="openCreateModal()">
         Nouveau frigo
       </button>
@@ -24,6 +32,7 @@ import { ApiService, Fridge, FridgeProof, ProofPhoto } from '../../core/api.serv
             <strong>{{ fridge.name }}</strong>
             <p class="entity-subtitle">{{ fridge.location || 'Sans emplacement' }}</p>
           </div>
+
           <span class="badge" [class.red]="fridge.status === 'INACTIVE'">
             {{ fridge.status === 'INACTIVE' ? 'Inactif' : 'Actif' }}
           </span>
@@ -34,6 +43,7 @@ import { ApiService, Fridge, FridgeProof, ProofPhoto } from '../../core/api.serv
             <span>Min</span>
             <strong>{{ fridge.minTemp }}°C</strong>
           </div>
+
           <div class="metric-box">
             <span>Max</span>
             <strong>{{ fridge.maxTemp }}°C</strong>
@@ -44,12 +54,23 @@ import { ApiService, Fridge, FridgeProof, ProofPhoto } from '../../core/api.serv
           <button type="button" class="action-btn primary" (click)="openProofModal(fridge)">
             📷 Nouveau relevé
           </button>
+
           <button type="button" class="action-btn" (click)="openEditModal(fridge)">
             ⚙️ Configurer
           </button>
+
           <button type="button" class="action-btn" (click)="toggleProofs(fridge)">
             🕘 Relevés du jour
           </button>
+
+          <button
+            type="button"
+            class="action-btn monitoring"
+            [routerLink]="['/temperature-dashboard', fridge.id]"
+          >
+            🌡️ Température live
+          </button>
+
           <button type="button" class="action-btn subtle" (click)="disable(fridge.id!)">
             ⛔ Désactiver
           </button>
@@ -81,6 +102,7 @@ import { ApiService, Fridge, FridgeProof, ProofPhoto } from '../../core/api.serv
                   <button type="button" class="tiny-btn" *ngIf="i > 0" (click)="movePhotoLeft(proof, i)">
                     ←
                   </button>
+
                   <button
                     type="button"
                     class="tiny-btn"
@@ -89,6 +111,7 @@ import { ApiService, Fridge, FridgeProof, ProofPhoto } from '../../core/api.serv
                   >
                     →
                   </button>
+
                   <button type="button" class="tiny-btn danger" (click)="deletePhoto(proof, photo)">
                     ✕
                   </button>
@@ -101,10 +124,12 @@ import { ApiService, Fridge, FridgeProof, ProofPhoto } from '../../core/api.serv
                 <span>Température</span>
                 <strong>{{ proof.temperature }} °C</strong>
               </div>
+
               <div>
                 <span>Par</span>
                 <strong>{{ proof.createdBy }}</strong>
               </div>
+
               <div>
                 <span>Date</span>
                 <strong>{{ proof.createdAt }}</strong>
@@ -130,6 +155,7 @@ import { ApiService, Fridge, FridgeProof, ProofPhoto } from '../../core/api.serv
             <input formControlName="location" placeholder="Emplacement">
             <input type="number" formControlName="minTemp" placeholder="Temp min">
             <input type="number" formControlName="maxTemp" placeholder="Temp max">
+
             <select formControlName="status">
               <option value="ACTIVE">Actif</option>
               <option value="INACTIVE">Inactif</option>
@@ -140,6 +166,7 @@ import { ApiService, Fridge, FridgeProof, ProofPhoto } from '../../core/api.serv
             <button type="button" class="btn-secondary-pro" (click)="closeConfigModal()">
               Annuler
             </button>
+
             <button type="submit" class="btn-primary-pro">
               Enregistrer
             </button>
@@ -197,6 +224,7 @@ import { ApiService, Fridge, FridgeProof, ProofPhoto } from '../../core/api.serv
             <div class="photo-grid" *ngIf="proofFiles.length">
               <div class="sortable-photo-card" *ngFor="let file of proofFiles; let i = index">
                 <div class="file-name">{{ file.name }}</div>
+
                 <button type="button" class="tiny-btn danger" (click)="removeProofFile(i)">
                   ✕
                 </button>
@@ -212,6 +240,7 @@ import { ApiService, Fridge, FridgeProof, ProofPhoto } from '../../core/api.serv
             <button type="button" class="btn-secondary-pro" (click)="closeProofModal()">
               Annuler
             </button>
+
             <button type="submit" class="btn-primary-pro action-lg">
               Valider le relevé
             </button>
@@ -236,6 +265,16 @@ import { ApiService, Fridge, FridgeProof, ProofPhoto } from '../../core/api.serv
     .zoomable-img:hover {
       transform: scale(1.01);
       box-shadow: 0 10px 25px rgba(15, 23, 42, .18);
+    }
+
+    .monitoring {
+      background: #dcfce7 !important;
+      color: #166534 !important;
+      border: 1px solid #86efac !important;
+    }
+
+    .monitoring:hover {
+      background: #bbf7d0 !important;
     }
 
     .image-modal {
@@ -291,11 +330,15 @@ export class FridgesComponent implements OnInit {
 
   fridges: Fridge[] = [];
   proofs: FridgeProof[] = [];
+
   selectedFridgeId?: number;
   currentFridge?: Fridge;
+
   proofFiles: File[] = [];
+
   showConfigModal = false;
   showProofModal = false;
+
   editingId?: number;
   dragIndex = -1;
   selectedImage = '';
@@ -318,6 +361,10 @@ export class FridgesComponent implements OnInit {
     this.load();
   }
 
+  load(): void {
+    this.api.getFridges().subscribe(data => this.fridges = data);
+  }
+
   openImage(url: string): void {
     this.selectedImage = url;
   }
@@ -326,12 +373,9 @@ export class FridgesComponent implements OnInit {
     this.selectedImage = '';
   }
 
-  load(): void {
-    this.api.getFridges().subscribe(data => this.fridges = data);
-  }
-
   openCreateModal(): void {
     this.editingId = undefined;
+
     this.form.reset({
       name: '',
       location: '',
@@ -339,11 +383,13 @@ export class FridgesComponent implements OnInit {
       maxTemp: 4,
       status: 'ACTIVE'
     });
+
     this.showConfigModal = true;
   }
 
   openEditModal(fridge: Fridge): void {
     this.editingId = fridge.id;
+
     this.form.reset({
       name: fridge.name,
       location: fridge.location || '',
@@ -351,6 +397,7 @@ export class FridgesComponent implements OnInit {
       maxTemp: fridge.maxTemp,
       status: fridge.status || 'ACTIVE'
     });
+
     this.showConfigModal = true;
   }
 
@@ -393,11 +440,13 @@ export class FridgesComponent implements OnInit {
   openProofModal(fridge: Fridge): void {
     this.currentFridge = fridge;
     this.proofFiles = [];
+
     this.proofForm.reset({
       temperature: 4,
       createdBy: localStorage.getItem('username') || '',
       comment: ''
     });
+
     this.showProofModal = true;
   }
 
@@ -405,6 +454,7 @@ export class FridgesComponent implements OnInit {
     this.showProofModal = false;
     this.currentFridge = undefined;
     this.proofFiles = [];
+
     this.proofForm.reset({
       temperature: 4,
       createdBy: localStorage.getItem('username') || '',
@@ -443,7 +493,9 @@ export class FridgesComponent implements OnInit {
   }
 
   submitProof(): void {
-    if (!this.currentFridge?.id || !this.proofFiles.length) return;
+    if (!this.currentFridge?.id || !this.proofFiles.length) {
+      return;
+    }
 
     const value = this.proofForm.getRawValue();
     const fd = new FormData();
@@ -458,7 +510,9 @@ export class FridgesComponent implements OnInit {
 
     this.api.createFridgeProof(this.currentFridge.id, fd).subscribe(() => {
       const fridge = this.currentFridge!;
+
       this.closeProofModal();
+
       this.selectedFridgeId = fridge.id;
 
       this.api.getFridgeProofs(fridge.id!).subscribe(data => {
@@ -491,6 +545,7 @@ export class FridgesComponent implements OnInit {
     [arr[index - 1], arr[index]] = [arr[index], arr[index - 1]];
 
     proof.photos = arr;
+
     this.api.reorderFridgeProofPhotos(proof.id!, arr.map(p => p.id!)).subscribe();
   }
 
@@ -501,6 +556,7 @@ export class FridgesComponent implements OnInit {
     [arr[index + 1], arr[index]] = [arr[index], arr[index + 1]];
 
     proof.photos = arr;
+
     this.api.reorderFridgeProofPhotos(proof.id!, arr.map(p => p.id!)).subscribe();
   }
 

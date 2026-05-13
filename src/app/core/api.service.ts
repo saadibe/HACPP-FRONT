@@ -30,6 +30,13 @@ export interface DashboardResponse {
   traceabilityToday: number; traceabilityMonth: number; traceabilityYear: number; fridgeProofs: number;
   lateCleaning: number; missingFridgeReadings: number; temperatureAlerts: number;
 }
+export interface TemperatureHistoryItem {
+  id?: number;
+  temperature: number;
+  createdAt: string;
+  createdBy?: string;
+  source?: string;
+}
 export interface ProofPhoto { id?: number; url: string; sortOrder: number; }
 export interface Fridge { id?: number; name: string; location?: string; minTemp: number; maxTemp: number; status?: string; }
 export interface FridgeProof { id?: number; temperature: number; photoPath?: string; comment?: string; createdBy: string; createdAt?: string; source?: string; photos?: ProofPhoto[]; }
@@ -53,6 +60,22 @@ export interface InvoiceOcrResponse {
 }
 export interface InvoiceStats { today: number; month: number; year: number; }
 export interface AlertSummary { lateCleaning: number; missingFridgeReadings: number; temperatureAlerts: number; }
+export interface ShellyDeviceDto {
+  id?: number;
+  deviceId: string;
+  restaurantId: number;
+  restaurantName?: string;
+  fridgeId: number;
+  fridgeName?: string;
+  active: boolean;
+}
+
+export interface ShellyDeviceRequest {
+  deviceId: string;
+  restaurantId: number;
+  fridgeId: number;
+  active: boolean;
+}
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
@@ -153,4 +176,47 @@ sendHygieneReportByEmail(filters?: { day?: string; month?: string; year?: number
 }
 
   reportUrl(): string { return `${this.baseUrl}/batches/report.pdf`; }
+
+  getShellyDevices(restaurantId: number) {
+    return this.http.get<ShellyDeviceDto[]>(
+      `${this.baseUrl}/admin/shelly-devices`,
+      { params: { restaurantId } }
+    );
+  }
+
+  createShellyDevice(payload: ShellyDeviceRequest) {
+    return this.http.post<ShellyDeviceDto>(
+      `${this.baseUrl}/admin/shelly-devices`,
+      payload
+    );
+  }
+
+getFridgeTemperatureHistory(fridgeId: number) {
+  return this.http.get<TemperatureHistoryItem[]>(
+    `${this.baseUrl}/fridges/${fridgeId}/temperature-history`
+  );
+}
+
+  updateShellyDevice(id: number, payload: ShellyDeviceRequest) {
+    return this.http.put<ShellyDeviceDto>(
+      `${this.baseUrl}/admin/shelly-devices/${id}`,
+      payload
+    );
+  }
+
+  deleteShellyDevice(id: number) {
+    return this.http.delete<void>(
+      `${this.baseUrl}/admin/shelly-devices/${id}`
+    );
+  }
+getDetectedShellyDevices(restaurantId: number) {
+  return this.http.get<any[]>(
+    `${this.baseUrl}/admin/shelly-devices/detected`,
+    {
+      params: {
+        restaurantId: restaurantId
+      }
+    }
+  );
+}
 }

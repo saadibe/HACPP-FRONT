@@ -13,6 +13,8 @@ import { authGuard } from './core/auth.guard';
 import { loginGuard } from './core/login.guard';
 import { rootRedirectGuard } from './core/root-redirect.guard';
 import { superAdminGuard } from './core/super-admin.guard';
+import {ShellyAdminComponent} from './features/shelly-admin/shelly-admin.component'
+import {TemperatureDashboardComponent} from './features/temperature-dashboard/temperature-dashboard.component'
 export const routes: Routes = [
   { path: '', canActivate: [rootRedirectGuard], component: LoginComponent },
 
@@ -30,7 +32,23 @@ export const routes: Routes = [
       { path: 'history', component: HistoryComponent },
       { path: 'users', component: UsersComponent },
       { path: 'hygiene-report', component: HygieneReportComponent },
-      { path: 'clients', component: ClientsComponent,canActivate: [authGuard, superAdminGuard] }
+      { path: 'clients', component: ClientsComponent,canActivate: [authGuard, superAdminGuard] },
+      {
+        path: 'shelly-admin',
+        component: ShellyAdminComponent
+      },
+  {
+    path: 'temperature-dashboard',
+    loadComponent: () =>
+      import('./features/temperature-dashboard/temperature-dashboard.component')
+        .then(m => m.TemperatureDashboardComponent)
+  },
+{
+  path: 'temperature-dashboard/:id',
+  loadComponent: () =>
+    import('./features/temperature-dashboard/temperature-dashboard.component')
+      .then(m => m.TemperatureDashboardComponent)
+}
     ]
   },
 

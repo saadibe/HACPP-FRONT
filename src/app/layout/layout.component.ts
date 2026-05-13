@@ -44,6 +44,7 @@ import { AuthService } from '../core/auth.service';
 
             <button type="button" (click)="go('/users')">👤 Mon compte</button>
             <button type="button"  *ngIf="isSuperAdmin()" (click)="go('/clients')"> 🏢 Clients</button>
+            <button type="button"  *ngIf="isSuperAdmin()" (click)="go('/shelly-admin')"> 🏢 Shelly-admin</button>
             <div class="separator"></div>
 
             <button type="button" class="logout" (click)="logout()">🚪 Déconnexion</button>
