@@ -30,6 +30,11 @@ export interface DashboardResponse {
   traceabilityToday: number; traceabilityMonth: number; traceabilityYear: number; fridgeProofs: number;
   lateCleaning: number; missingFridgeReadings: number; temperatureAlerts: number;
 }
+export type TemperaturePeriod =
+  'DAY'
+  | 'WEEK'
+  | 'MONTH'
+  | 'YEAR';
 export interface TemperatureHistoryItem {
   id?: number;
   temperature: number;
@@ -191,9 +196,10 @@ sendHygieneReportByEmail(filters?: { day?: string; month?: string; year?: number
     );
   }
 
-getFridgeTemperatureHistory(fridgeId: number) {
+getFridgeTemperatureHistory(fridgeId: number, period: TemperaturePeriod = 'DAY') {
   return this.http.get<TemperatureHistoryItem[]>(
-    `${this.baseUrl}/fridges/${fridgeId}/temperature-history`
+    `${this.baseUrl}/fridges/${fridgeId}/temperature-history`,
+    { params: { period } }
   );
 }
 
