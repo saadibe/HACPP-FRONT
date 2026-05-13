@@ -37,12 +37,6 @@ export const routes: Routes = [
         path: 'shelly-admin',
         component: ShellyAdminComponent
       },
-  {
-    path: 'temperature-dashboard',
-    loadComponent: () =>
-      import('./features/temperature-dashboard/temperature-dashboard.component')
-        .then(m => m.TemperatureDashboardComponent)
-  },
 {
   path: 'temperature-dashboard/:id',
   loadComponent: () =>

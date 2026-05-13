@@ -663,3 +663,36 @@ button.secondary,.btn-secondary-pro{
   background:#fff1f3;
   color:#b42318;
 }
+@media screen and (orientation: landscape) {
+  .cards-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .fridge-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .modal-card {
+    max-width: 900px;
+  }
+
+  .action-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media screen and (orientation: portrait) {
+  .cards-grid,
+  .fridge-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-card {
+    width: calc(100vw - 24px);
+    max-width: 100%;
+  }
+
+  .action-grid {
+    grid-template-columns: 1fr;
+  }
+}
