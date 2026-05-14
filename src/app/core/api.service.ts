@@ -36,11 +36,12 @@ export type TemperaturePeriod =
   | 'MONTH'
   | 'YEAR';
 export interface TemperatureHistoryItem {
-  id?: number;
+  id: number;
   temperature: number;
   createdAt: string;
-  createdBy?: string;
-  source?: string;
+  createdBy: string;
+  source: string;
+  batteryPercent?: number;
 }
 export interface ProofPhoto { id?: number; url: string; sortOrder: number; }
 export interface Fridge { id?: number; name: string; location?: string; minTemp: number; maxTemp: number; status?: string; }
