@@ -40,33 +40,93 @@ type TemperaturePeriod = 'DAY' | 'WEEK' | 'MONTH' | 'YEAR';
   selector: 'app-temperature-dashboard',
   standalone: true,
   imports: [CommonModule, BaseChartDirective],
+
   template: `
     <section class="dashboard-page">
 
-      <div class="top-bar">
-        <div>
-          <h1>{{ fridgeName || 'Courbe température' }}</h1>
-          <p>Historique automatique Shelly HACCP</p>
+      <div class="top-header">
+
+        <div class="header-left">
+          <h1>{{ fridgeName || 'Frigo HACCP' }}</h1>
+
+          <div class="sub-line">
+            <span class="online-dot"></span>
+            <span>Historique automatique Shelly HACCP</span>
+          </div>
         </div>
 
         <button type="button" class="back-btn" (click)="goBack()">
           ← Retour
         </button>
+
       </div>
 
-      <div class="filters-row">
+      <div class="filters-wrapper">
+
         <div class="period-tabs">
-          <button type="button" [class.active]="period === 'DAY'" (click)="changePeriod('DAY')">Jour</button>
-          <button type="button" [class.active]="period === 'WEEK'" (click)="changePeriod('WEEK')">Semaine</button>
-          <button type="button" [class.active]="period === 'MONTH'" (click)="changePeriod('MONTH')">Mois</button>
-          <button type="button" [class.active]="period === 'YEAR'" (click)="changePeriod('YEAR')">Année</button>
+
+          <button
+            type="button"
+            [class.active]="period === 'DAY'"
+            (click)="changePeriod('DAY')"
+          >
+            📅 Jour
+          </button>
+
+          <button
+            type="button"
+            [class.active]="period === 'WEEK'"
+            (click)="changePeriod('WEEK')"
+          >
+            📆 Semaine
+          </button>
+
+          <button
+            type="button"
+            [class.active]="period === 'MONTH'"
+            (click)="changePeriod('MONTH')"
+          >
+            🗓️ Mois
+          </button>
+
+          <button
+            type="button"
+            [class.active]="period === 'YEAR'"
+            (click)="changePeriod('YEAR')"
+          >
+            🗓️ Année
+          </button>
+
         </div>
 
         <div class="interval-tabs">
-          <button type="button" [class.active]="intervalMinutes === 5" (click)="changeInterval(5)">5 min</button>
-          <button type="button" [class.active]="intervalMinutes === 60" (click)="changeInterval(60)">1h</button>
-          <button type="button" [class.active]="intervalMinutes === 120" (click)="changeInterval(120)">2h</button>
+
+          <button
+            type="button"
+            [class.active]="intervalMinutes === 5"
+            (click)="changeInterval(5)"
+          >
+            🕘 5 min
+          </button>
+
+          <button
+            type="button"
+            [class.active]="intervalMinutes === 60"
+            (click)="changeInterval(60)"
+          >
+            🕘 1 h
+          </button>
+
+          <button
+            type="button"
+            [class.active]="intervalMinutes === 120"
+            (click)="changeInterval(120)"
+          >
+            🕘 2 h
+          </button>
+
         </div>
+
       </div>
 
       <div class="loading-card" *ngIf="loading">
@@ -74,129 +134,304 @@ type TemperaturePeriod = 'DAY' | 'WEEK' | 'MONTH' | 'YEAR';
       </div>
 
       <div class="empty-card" *ngIf="!loading && !history.length">
-        Aucun relevé automatique disponible pour cette période.
+        Aucun relevé disponible.
       </div>
 
-      <div class="chart-card" *ngIf="!loading && history.length">
+      <ng-container *ngIf="!loading && history.length">
 
         <div class="stats-grid">
-          <div class="stat-box" [ngClass]="temperatureStatus(latestTemperature)">
-            <span>Dernière température</span>
-            <strong>{{ latestTemperature }} °C</strong>
+
+          <div
+            class="stat-card"
+            [ngClass]="temperatureStatus(latestTemperature)"
+          >
+            <div class="stat-label">
+              🌡️ Dernière température
+            </div>
+
+            <div class="stat-value">
+              {{ latestTemperature }} °C
+            </div>
           </div>
 
-          <div class="stat-box battery-card">
-            <span>État batterie</span>
-            <strong>🔋 {{ latestBatteryPercent ?? '--' }} %</strong>
+          <div class="stat-card battery">
+            <div class="stat-label">
+              🔋 État batterie
+            </div>
+
+            <div class="stat-value">
+              {{ latestBatteryPercent ?? '--' }} %
+            </div>
           </div>
+
+
+
         </div>
 
-        <div class="chart-wrapper">
-          <canvas
-            baseChart
-            [type]="'line'"
-            [data]="lineChartData"
-            [options]="lineChartOptions">
-          </canvas>
-        </div>
-      </div>
+        <div class="average-card">
 
-      <div class="history-card" *ngIf="!loading && history.length">
-        <h3>Historique automatique — tous les relevés</h3>
-
-        <div
-          class="history-row"
-          *ngFor="let item of history"
-          [ngClass]="temperatureStatus(item.temperature)"
-        >
           <div>
-            <strong>{{ item.temperature }} °C</strong>
-            <p>{{ formatDate(item.createdAt) }}</p>
+            <div class="average-label">
+              Température moyenne
+            </div>
+
+            <div class="average-value">
+              {{ avgTemperature }} °C
+            </div>
           </div>
+
+          <div class="divider"></div>
+
+          <div>
+            <div class="average-label">
+              Relevés
+            </div>
+
+            <div class="average-value small">
+              {{ groupedHistory.length }}
+            </div>
+          </div>
+
         </div>
-      </div>
+
+        <div class="chart-card">
+
+          <div class="chart-title">
+            Courbe de température
+            <span>(toutes les {{ intervalLabel }})</span>
+          </div>
+
+          <div class="chart-wrapper">
+            <canvas
+              baseChart
+              [type]="'line'"
+              [data]="lineChartData"
+              [options]="lineChartOptions">
+            </canvas>
+          </div>
+
+        </div>
+
+        <div class="history-card">
+
+          <div class="history-head">
+            <h3>Derniers relevés</h3>
+          </div>
+
+          <div
+            class="history-row"
+            *ngFor="let item of history.slice().reverse().slice(0,20)"
+          >
+
+            <div class="history-left">
+
+              <div
+                class="temp-circle"
+                [ngClass]="temperatureStatus(item.temperature)"
+              >
+                {{ item.temperature }}°
+              </div>
+
+              <div>
+                <strong>{{ formatDate(item.createdAt) }}</strong>
+
+                <p>Automatique Shelly</p>
+              </div>
+
+            </div>
+
+            <div class="battery-mini">
+              🔋 {{ item.batteryPercent ?? '--' }} %
+            </div>
+
+          </div>
+
+        </div>
+
+      </ng-container>
+
     </section>
   `,
+
   styles: [`
+
     .dashboard-page {
-      padding: 24px;
+      padding: 20px;
       display: flex;
       flex-direction: column;
       gap: 20px;
+      background: #eef4fb;
+      min-height: 100vh;
     }
 
-    .top-bar {
+    .top-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 12px;
+      gap: 16px;
       flex-wrap: wrap;
     }
 
-    .top-bar h1 {
+    .header-left h1 {
       margin: 0;
-      font-size: 28px;
-      font-weight: 900;
+      font-size: 32px;
+      font-weight: 700;
       color: #0f172a;
     }
 
-    .top-bar p {
-      margin: 4px 0 0;
+    .sub-line {
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
       color: #64748b;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .online-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #22c55e;
+      display: block;
     }
 
     .back-btn {
-      border: none;
-      background: linear-gradient(135deg, #0f4c81, #1d4ed8);
-      color: white;
-      padding: 10px 16px;
-      border-radius: 12px;
-      cursor: pointer;
-      font-weight: 800;
-      font-size: 14px;
-      width: auto;
-      box-shadow: 0 10px 20px rgba(37, 99, 235, .18);
+      border: none !important;
+      width: auto !important;
+      background: linear-gradient(135deg,#0f4c81,#0066d6) !important;
+      color: white !important;
+      padding: 14px 22px !important;
+      border-radius: 18px !important;
+      font-size: 16px !important;
+      font-weight: 700 !important;
+      cursor: pointer !important;
+      box-shadow: 0 12px 24px rgba(0,102,214,.20);
     }
 
-    .filters-row {
+    .filters-wrapper {
       display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      align-items: center;
+      flex-direction: column;
+      gap: 16px;
     }
 
     .period-tabs,
     .interval-tabs {
-      display: inline-flex;
-      gap: 6px;
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 999px;
-      padding: 6px;
-      box-shadow: 0 12px 28px rgba(15, 23, 42, .08);
+      background: white !important;
+      border-radius: 24px !important;
+      padding: 10px !important;
+      display: grid !important;
+      gap: 10px !important;
+      box-shadow: 0 12px 30px rgba(15,23,42,.08) !important;
+    }
+
+    .period-tabs {
+      grid-template-columns: repeat(4,1fr) !important;
+    }
+
+    .interval-tabs {
+      grid-template-columns: repeat(3,1fr) !important;
     }
 
     .period-tabs button,
     .interval-tabs button {
-      border: none;
-      border-radius: 999px;
-      padding: 10px 18px;
-      background: transparent;
-      color: #64748b;
-      font-weight: 900;
-      cursor: pointer;
-      min-width: 86px;
-      transition: all .18s ease;
+      border: none !important;
+      border-radius: 18px !important;
+      background: #f8fafc !important;
+      color: #243b5a !important;
+      padding: 16px 12px !important;
+      font-weight: 700 !important;
+      font-size: 17px !important;
+      cursor: pointer !important;
     }
 
-    .period-tabs button.active {
-      background: linear-gradient(135deg, #0f4c81, #2563eb);
-      color: white;
-    }
-
+    .period-tabs button.active,
     .interval-tabs button.active {
-      background: linear-gradient(135deg, #16a34a, #22c55e);
-      color: white;
+      background: linear-gradient(135deg,#0f4c81,#0066d6) !important;
+      color: white !important;
+      box-shadow: 0 10px 24px rgba(0,102,214,.24) !important;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4,1fr);
+      gap: 16px;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 28px;
+      padding: 22px;
+      box-shadow: 0 10px 30px rgba(15,23,42,.06);
+      border: 2px solid #e2e8f0;
+    }
+
+    .stat-card.good {
+      background: #f0fdf4;
+      border-color: #bbf7d0;
+    }
+
+    .stat-card.warning {
+      background: #fff7ed;
+      border-color: #fed7aa;
+    }
+
+    .stat-card.danger {
+      background: #fef2f2;
+      border-color: #fecaca;
+    }
+
+    .stat-card.battery {
+      background: #eff6ff;
+      border-color: #bfdbfe;
+    }
+
+    .stat-label {
+      color: #64748b;
+      font-size: 15px;
+      font-weight: 800;
+      margin-bottom: 16px;
+    }
+
+    .stat-value {
+      font-size: 46px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .average-card {
+      background: white;
+      border-radius: 30px;
+      padding: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      box-shadow: 0 10px 30px rgba(15,23,42,.06);
+    }
+
+    .average-label {
+      color: #64748b;
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .average-value {
+      font-size: 44px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .average-value.small {
+      font-size: 36px;
+    }
+
+    .divider {
+      width: 1px;
+      align-self: stretch;
+      background: #e2e8f0;
     }
 
     .chart-card,
@@ -204,67 +439,34 @@ type TemperaturePeriod = 'DAY' | 'WEEK' | 'MONTH' | 'YEAR';
     .loading-card,
     .empty-card {
       background: white;
-      border-radius: 24px;
-      padding: 24px;
-      box-shadow: 0 10px 30px rgba(15,23,42,.08);
+      border-radius: 30px;
+      padding: 28px;
+      box-shadow: 0 10px 30px rgba(15,23,42,.06);
     }
 
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit,minmax(150px,1fr));
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-
-    .stat-box {
-      background: #f8fafc;
-      border-radius: 18px;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      border: 1px solid #e2e8f0;
-    }
-
-    .stat-box.good {
-      background: #f0fdf4;
-      border-color: #86efac;
-    }
-
-    .stat-box.warning {
-      background: #fffbeb;
-      border-color: #fbbf24;
-    }
-
-    .stat-box.danger {
-      background: #fef2f2;
-      border-color: #fca5a5;
-    }
-
-    .battery-card {
-      background: #eff6ff;
-      border-color: #93c5fd;
-    }
-
-    .stat-box span {
-      color: #64748b;
-      font-size: 13px;
-      font-weight: 800;
-    }
-
-    .stat-box strong {
-      font-size: 26px;
+    .chart-title {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 22px;
       color: #0f172a;
     }
 
-    .chart-wrapper {
-      height: 360px;
-      width: 100%;
+    .chart-title span {
+      color: #64748b;
+      font-size: 18px;
     }
 
-    .history-card h3 {
-      margin-top: 0;
+    .chart-wrapper {
+      height: 420px;
+    }
+
+    .history-head {
       margin-bottom: 18px;
+    }
+
+    .history-head h3 {
+      margin: 0;
+      font-size: 30px;
       color: #0f172a;
     }
 
@@ -272,96 +474,148 @@ type TemperaturePeriod = 'DAY' | 'WEEK' | 'MONTH' | 'YEAR';
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 14px 16px;
-      border-left: 6px solid transparent;
-      border-radius: 14px;
-      margin-bottom: 8px;
+      padding: 16px 0;
+      border-bottom: 1px solid #e2e8f0;
     }
 
-    .history-row.good {
-      border-left-color: #16a34a;
-      background: #f0fdf4;
+    .history-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
     }
 
-    .history-row.warning {
-      border-left-color: #f59e0b;
-      background: #fffbeb;
+    .temp-circle {
+      width: 74px;
+      height: 74px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 700;
     }
 
-    .history-row.danger {
-      border-left-color: #dc2626;
-      background: #fef2f2;
+    .temp-circle.good {
+      background: #dcfce7;
+      color: #15803d;
     }
 
-    .history-row p {
-      margin: 4px 0 0;
+    .temp-circle.warning {
+      background: #fef3c7;
+      color: #d97706;
+    }
+
+    .temp-circle.danger {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+
+    .history-left strong {
+      color: #0f172a;
+      font-size: 18px;
+    }
+
+    .history-left p {
+      margin: 6px 0 0;
       color: #64748b;
-      font-size: 13px;
+      font-size: 14px;
     }
 
-    .battery-badge {
-      background: #dbeafe;
-      color: #1d4ed8;
-      padding: 8px 12px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 900;
+    .battery-mini {
+      color: #16a34a;
+      font-size: 20px;
+      font-weight: 700;
       white-space: nowrap;
     }
 
+    @media (max-width: 900px) {
+
+      .stats-grid {
+        grid-template-columns: repeat(2,1fr);
+      }
+
+      .period-tabs {
+        grid-template-columns: repeat(2,1fr) !important;
+      }
+
+      .chart-wrapper {
+        height: 320px;
+      }
+
+      .header-left h1 {
+        font-size: 28px;
+      }
+    }
+
     @media (max-width: 700px) {
+
       .dashboard-page {
         padding: 14px;
       }
 
-      .filters-row {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      .period-tabs,
-      .interval-tabs {
-        width: 100%;
-        display: grid;
-        border-radius: 22px;
-      }
-
-      .period-tabs {
-        grid-template-columns: repeat(2, 1fr);
+      .stats-grid {
+        grid-template-columns: 1fr 1fr;
       }
 
       .interval-tabs {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(3,1fr) !important;
       }
 
       .period-tabs button,
       .interval-tabs button {
         min-width: 0;
-        padding: 10px 8px;
+        padding: 12px 6px !important;
+        font-size: 15px !important;
       }
 
-      .chart-wrapper {
-        height: 300px;
+      .stat-value {
+        font-size: 28px;
+      }
+
+      .average-value {
+        font-size: 30px;
+      }
+
+      .average-card {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .divider {
+        width: 100%;
+        height: 1px;
       }
 
       .history-row {
-        align-items: flex-start;
-        gap: 10px;
+        gap: 12px;
+      }
+
+      .temp-circle {
+        width: 56px;
+        height: 56px;
+        font-size: 18px;
+      }
+
+      .battery-mini {
+        font-size: 16px;
       }
     }
+
   `]
 })
 export class TemperatureDashboardComponent implements OnInit {
+
   private readonly api = inject(ApiService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
-  period: TemperaturePeriod = 'DAY';
-  intervalMinutes = 120;
-
   fridgeId = 0;
   fridgeName = '';
+
   loading = true;
+
+  period: TemperaturePeriod = 'DAY';
+  intervalMinutes = 120;
 
   history: TemperatureHistoryItem[] = [];
   groupedHistory: TemperatureHistoryItem[] = [];
@@ -370,37 +624,50 @@ export class TemperatureDashboardComponent implements OnInit {
   minTemperature = 0;
   maxTemperature = 0;
   avgTemperature = 0;
+
   latestBatteryPercent?: number;
 
   lineChartData: ChartData<'line'> = {
     labels: [],
-    datasets: [
-      {
-        data: [],
-        label: 'Température °C',
-        tension: 0.35,
-        fill: true
-      }
-    ]
+    datasets: []
   };
 
   lineChartOptions: ChartOptions<'line'> = {
     responsive: true,
     maintainAspectRatio: false,
-    scales: {
-      y: {
-        beginAtZero: false
-      }
-    },
+
     plugins: {
       legend: {
-        display: true
+        display: false
+      }
+    },
+
+    scales: {
+      y: {
+        beginAtZero: false,
+        ticks: {
+          color: '#64748b'
+        },
+        grid: {
+          color: '#e2e8f0'
+        }
+      },
+
+      x: {
+        ticks: {
+          color: '#64748b'
+        },
+        grid: {
+          color: '#f1f5f9'
+        }
       }
     }
   };
 
   ngOnInit(): void {
-    this.fridgeId = Number(this.route.snapshot.paramMap.get('id'));
+
+    this.fridgeId =
+      Number(this.route.snapshot.paramMap.get('id'));
 
     if (!this.fridgeId) {
       this.loading = false;
@@ -411,80 +678,147 @@ export class TemperatureDashboardComponent implements OnInit {
     this.loadHistory();
   }
 
+  get intervalLabel(): string {
+
+    if (this.intervalMinutes === 5) {
+      return '5 min';
+    }
+
+    if (this.intervalMinutes === 60) {
+      return '1h';
+    }
+
+    return '2h';
+  }
+
   loadFridgeName(): void {
+
     this.api.getFridges().subscribe({
       next: (fridges: Fridge[]) => {
-        const fridge = fridges.find(f => f.id === this.fridgeId);
-        this.fridgeName = fridge?.name || 'Courbe température';
+
+        const fridge =
+          fridges.find(f => f.id === this.fridgeId);
+
+        this.fridgeName =
+          fridge?.name || 'Frigo HACCP';
       }
     });
   }
 
-  changePeriod(value: TemperaturePeriod): void {
-    this.period = value;
+  changePeriod(period: TemperaturePeriod): void {
+    this.period = period;
     this.loadHistory();
   }
 
-  changeInterval(minutes: number): void {
-    this.intervalMinutes = minutes;
+  changeInterval(value: number): void {
+    this.intervalMinutes = value;
     this.buildChart(this.history);
   }
 
   loadHistory(): void {
-    this.loading = true;
-    this.resetChart();
 
-    this.api.getFridgeTemperatureHistory(this.fridgeId, this.period).subscribe({
-      next: (data: TemperatureHistoryItem[]) => {
-        this.history = data.filter(item => item.source === 'SHELLY_AUTOMATIC');
-        this.buildChart(this.history);
-        this.loading = false;
-      },
-      error: () => {
-        this.history = [];
-        this.groupedHistory = [];
-        this.loading = false;
-      }
-    });
+    this.loading = true;
+
+    this.api
+      .getFridgeTemperatureHistory(
+        this.fridgeId,
+        this.period
+      )
+      .subscribe({
+
+        next: (data: TemperatureHistoryItem[]) => {
+
+          this.history =
+            data.filter(
+              x => x.source === 'SHELLY_AUTOMATIC'
+            );
+
+          this.buildChart(this.history);
+
+          this.loading = false;
+        },
+
+        error: () => {
+
+          this.loading = false;
+          this.history = [];
+        }
+      });
   }
 
   buildChart(data: TemperatureHistoryItem[]): void {
+
     if (!data.length) {
-      this.resetChart();
       return;
     }
 
-    this.groupedHistory = this.groupByInterval(data, this.intervalMinutes);
+    this.groupedHistory =
+      this.groupByInterval(
+        data,
+        this.intervalMinutes
+      );
 
-    const temperatures = this.groupedHistory.map(item => Number(item.temperature));
+    const temperatures =
+      this.groupedHistory.map(
+        x => Number(x.temperature)
+      );
 
-    this.latestTemperature = temperatures[temperatures.length - 1];
-    this.minTemperature = Math.min(...temperatures);
-    this.maxTemperature = Math.max(...temperatures);
+    this.latestTemperature =
+      temperatures[temperatures.length - 1];
+
+    this.minTemperature =
+      Math.min(...temperatures);
+
+    this.maxTemperature =
+      Math.max(...temperatures);
+
     this.avgTemperature = Number(
-      (temperatures.reduce((sum, value) => sum + value, 0) / temperatures.length).toFixed(1)
+      (
+        temperatures.reduce((a,b)=>a+b,0)
+        / temperatures.length
+      ).toFixed(1)
     );
 
     this.latestBatteryPercent =
-      this.history[this.history.length - 1]?.batteryPercent;
+      this.history[this.history.length - 1]
+      ?.batteryPercent;
 
-    const colors = temperatures.map(temp => this.temperatureColor(temp));
+    const pointColors =
+      temperatures.map(
+        temp => this.temperatureColor(temp)
+      );
 
     this.lineChartData = {
-      labels: this.groupedHistory.map(item => this.formatLabel(item.createdAt)),
+
+      labels:
+        this.groupedHistory.map(
+          x => this.formatLabel(x.createdAt)
+        ),
+
       datasets: [
         {
           data: temperatures,
-          label: 'Température °C',
-          tension: 0.35,
+
+          tension: 0.4,
+
           fill: true,
+
+          borderWidth: 4,
+
           borderColor: '#2563eb',
-          backgroundColor: 'rgba(37,99,235,0.12)',
-          pointBackgroundColor: colors,
-          pointBorderColor: colors,
-          pointRadius: 5,
-          pointHoverRadius: 7,
-          borderWidth: 3
+
+          backgroundColor:
+            'rgba(37,99,235,0.12)',
+
+          pointBackgroundColor:
+            pointColors,
+
+          pointBorderColor:
+            pointColors,
+
+          pointRadius: 6,
+
+          pointHoverRadius: 8
         }
       ]
     };
@@ -494,101 +828,123 @@ export class TemperatureDashboardComponent implements OnInit {
     data: TemperatureHistoryItem[],
     intervalMinutes: number
   ): TemperatureHistoryItem[] {
-    const grouped = new Map<number, TemperatureHistoryItem[]>();
+
+    const grouped =
+      new Map<number, TemperatureHistoryItem[]>();
 
     data.forEach(item => {
-      const time = new Date(item.createdAt).getTime();
-      const bucket = Math.floor(time / (intervalMinutes * 60 * 1000));
 
-      const list = grouped.get(bucket) || [];
-      list.push(item);
-      grouped.set(bucket, list);
+      const time =
+        new Date(item.createdAt).getTime();
+
+      const bucket =
+        Math.floor(
+          time /
+          (intervalMinutes * 60 * 1000)
+        );
+
+      const arr =
+        grouped.get(bucket) || [];
+
+      arr.push(item);
+
+      grouped.set(bucket, arr);
     });
 
-    return Array.from(grouped.values()).map(items => {
-      const avg = items.reduce(
-        (sum, item) => sum + Number(item.temperature),
-        0
-      ) / items.length;
+    return Array.from(grouped.values())
+      .map(items => {
 
-      return {
-        ...items[items.length - 1],
-        temperature: Number(avg.toFixed(1))
-      };
-    });
+        const avg =
+          items.reduce(
+            (s,i)=>s+Number(i.temperature),
+            0
+          ) / items.length;
+
+        return {
+          ...items[items.length - 1],
+          temperature: Number(avg.toFixed(1))
+        };
+      });
   }
 
-  resetChart(): void {
-    this.latestTemperature = 0;
-    this.minTemperature = 0;
-    this.maxTemperature = 0;
-    this.avgTemperature = 0;
-    this.latestBatteryPercent = undefined;
-    this.groupedHistory = [];
+  temperatureStatus(
+    value: number
+  ): 'good' | 'warning' | 'danger' {
 
-    this.lineChartData = {
-      labels: [],
-      datasets: [
-        {
-          data: [],
-          label: 'Température °C',
-          tension: 0.35,
-          fill: true
-        }
-      ]
-    };
-  }
+    if (value <= 4) {
+      return 'good';
+    }
 
-  temperatureStatus(value: number): 'good' | 'warning' | 'danger' {
-    const temp = Number(value);
+    if (value <= 8) {
+      return 'warning';
+    }
 
-    if (temp <= 4) return 'good';
-    if (temp <= 8) return 'warning';
     return 'danger';
   }
 
   temperatureColor(value: number): string {
-    const status = this.temperatureStatus(value);
 
-    if (status === 'good') return '#16a34a';
-    if (status === 'warning') return '#f59e0b';
-    return '#dc2626';
+    const status =
+      this.temperatureStatus(value);
+
+    if (status === 'good') {
+      return '#22c55e';
+    }
+
+    if (status === 'warning') {
+      return '#f59e0b';
+    }
+
+    return '#ef4444';
   }
 
   formatLabel(date: string): string {
+
     if (this.period === 'DAY') {
       return this.formatHour(date);
     }
 
     if (this.period === 'WEEK') {
-      return new Date(date).toLocaleDateString('fr-FR', {
-        weekday: 'short',
-        day: '2-digit'
-      });
+
+      return new Date(date)
+        .toLocaleDateString('fr-FR', {
+          weekday: 'short',
+          day: '2-digit'
+        });
     }
 
     if (this.period === 'MONTH') {
-      return new Date(date).toLocaleDateString('fr-FR', {
-        day: '2-digit',
-        month: '2-digit'
-      });
+
+      return new Date(date)
+        .toLocaleDateString('fr-FR', {
+          day: '2-digit',
+          month: '2-digit'
+        });
     }
 
-    return new Date(date).toLocaleDateString('fr-FR', {
-      month: 'short',
-      year: '2-digit'
-    });
+    return new Date(date)
+      .toLocaleDateString('fr-FR', {
+        month: 'short',
+        year: '2-digit'
+      });
   }
 
   formatHour(date: string): string {
-    return new Date(date).toLocaleTimeString('fr-FR', {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+
+    return new Date(date)
+      .toLocaleTimeString('fr-FR', {
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'Europe/Paris'
+      });
   }
 
   formatDate(date: string): string {
-    return new Date(date).toLocaleString('fr-FR');
+
+    return new Date(date)
+      .toLocaleString('fr-FR', {
+        timeZone: 'Europe/Paris'
+      });
   }
 
   goBack(): void {
